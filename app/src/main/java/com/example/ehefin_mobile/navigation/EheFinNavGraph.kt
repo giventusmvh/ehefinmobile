@@ -37,6 +37,12 @@ fun EheFinNavGraph(
                     }
             )
         }
+        
+        composable(Screen.ForgotPassword.route) {
+            com.example.ehefin_mobile.feature.auth.presentation.screen.ForgotPasswordScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
 
         composable(Screen.Register.route) {
             RegisterScreen(

@@ -31,10 +31,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
+import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,8 +47,18 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToPlafond: () -> Unit,
     onNavigateToSubmitLoan: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    // Listen for logout success event
+    LaunchedEffect(Unit) {
+        authViewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.LogoutSuccess -> onLogout()
+                else -> {}
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,7 +76,7 @@ fun HomeScreen(
                             contentDescription = "Profil"
                         )
                     }
-                    IconButton(onClick = onLogout) {
+                    IconButton(onClick = { authViewModel.logout() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Logout"
