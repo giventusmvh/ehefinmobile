@@ -34,6 +34,7 @@
 | **Registration**   | `POST /api/auth/register`                           |
 | **Login/Logout**   | `POST /api/auth/login`, `/logout`                   |
 | **Password Reset** | `POST /api/auth/forgot-password`, `/reset-password` |
+| **FCM Token**      | `POST /api/customer/fcm-token`                      |
 | **Profile**        | `GET/PUT /api/customer/profile`                     |
 | **Plafond**        | `GET/POST /api/customer/plafond`                    |
 | **Loans**          | `GET/POST /api/loans`, `/loans/{id}`                |
@@ -320,6 +321,45 @@ if (pm.response.code === 201) {
 ---
 
 ## 3. Customer Flow [📱 MOBILE]
+
+### 3.0 Register FCM Token (Push Notifications)
+
+**Endpoint:** `POST /api/customer/fcm-token`  
+**Auth:** Bearer Token (CUSTOMER)
+
+> **Important:** Call this endpoint after login to enable push notifications for loan status updates.
+
+```json
+// Request Body
+{
+  "fcmToken": "firebase-device-token-from-mobile-sdk"
+}
+```
+
+```json
+// Success Response (200 OK)
+{
+  "success": true,
+  "message": "FCM token registered successfully",
+  "data": null,
+  "timestamp": "2026-01-22T10:00:00"
+}
+```
+
+**When to call:**
+
+- After successful login
+- After app reinstall or data clear (FCM token regenerates)
+
+**Push Notifications sent for:**
+| Status | Notification |
+|--------|--------------|
+| MARKETING_APPROVED | "Pengajuan sedang dalam review Branch Manager" |
+| BRANCH_MANAGER_APPROVED | "Pengajuan menunggu persetujuan akhir" |
+| DISBURSED | "Selamat! Pengajuan Anda telah disetujui ✅" |
+| \*\_REJECTED | "Pengajuan ditolak. Alasan: {note} ❌" |
+
+---
 
 ### 3.1 Get Profile
 
@@ -1683,5 +1723,5 @@ Returns the file content with appropriate `Content-Type` header (e.g., `image/jp
 | 32                          | GET    | `/uploads/{filename}`                      | Get uploaded file              | Bearer (Owner/Staff) |
 
 ---
-
+/
 _Documentation updated: 2026-01-08_

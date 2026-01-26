@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "173366112230",
+    "project_id": "ehefin-5be43",
+    "storage_bucket": "ehefin-5be43.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173366112230:android:86550c39cafe11c947b027",
+        "android_client_info": {
+          "package_name": "com.example.ehefin_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYwR48ONYfPKZwd89hWKDrvRxhTGiJ0GE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
