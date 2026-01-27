@@ -24,6 +24,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import retrofit2.Response
+import com.example.ehefin_mobile.core.database.dao.PendingRequestDao
+import com.example.ehefin_mobile.core.database.entity.PendingRequestEntity
+import com.example.ehefin_mobile.core.worker.SyncWorker
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.NetworkType
+import androidx.work.Constraints
 import javax.inject.Inject
 
 /**
@@ -45,6 +52,8 @@ class LoanRepositoryImpl @Inject constructor(
     private val loanApi: LoanApi,
     private val loanDao: LoanDao,
     private val loanHistoryDao: LoanHistoryDao,
+    private val pendingRequestDao: PendingRequestDao,
+    private val workManager: WorkManager,
     private val networkMonitor: NetworkMonitor,
     private val gson: Gson,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
@@ -156,17 +165,76 @@ class LoanRepositoryImpl @Inject constructor(
      * Submit new loan - requires network
      */
     override suspend fun submitLoan(request: SubmitLoanRequest): Resource<LoanApplication> {
+        val requestDto = LoanRequestDto(
+            branchId = request.branchId,
+            amount = request.amount,
+            tenor = request.tenor,
+            interestRate = request.interestRate
+        )
+
         if (!networkMonitor.isOnline()) {
-            return Resource.Error("Tidak ada koneksi internet. Silakan coba lagi.")
+            // Offline Mode: Queue the request
+            try {
+                val jsonRequest = gson.toJson(requestDto)
+                val entity = PendingRequestEntity(
+                    type = "SUBMIT_LOAN",
+                    data = jsonRequest
+                )
+                pendingRequestDao.insert(entity)
+                
+                // Schedule Sync
+                val constraints = Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+                    
+                val syncWork = OneTimeWorkRequestBuilder<SyncWorker>()
+                    .setConstraints(constraints)
+                    .build()
+                    
+                // Use UniqueWork to avoid duplicate jobs unnecessarily, 
+                // but APPEND so they run in sequence if multiple exist
+                workManager.enqueueUniqueWork(
+                    SyncWorker.WORK_NAME,
+                    androidx.work.ExistingWorkPolicy.APPEND_OR_REPLACE,
+                    syncWork
+                )
+                
+                // Return dummy success object for UI
+                // Note: In a real app, we might want a specific mapping or local ID generation
+                return Resource.Success(
+                    LoanApplication(
+                        id = -1, // Indicates temporary/offline
+                        customerId = 0,
+                        customerName = "Offline User",
+                        customerEmail = "",
+                        customerNik = null,
+                        customerPhone = null,
+                        customerAddress = null,
+                        customerBirthdate = null,
+                        customerKtpPath = null,
+                        customerKkPath = null,
+                        customerNpwpPath = null,
+                        customerBankName = null,
+                        customerAccountNumber = null,
+                        customerAccountHolderName = null,
+                        productId = 0,
+                        productName = "Menunggu Sinkronisasi",
+                        branchId = request.branchId,
+                        branchName = "Processing...",
+                        requestedAmount = request.amount,
+                        requestedTenor = request.tenor,
+                        requestedRate = request.interestRate,
+                        status = com.example.ehefin_mobile.feature.loan.domain.model.LoanStatus.SUBMITTED,
+                        createdAt = com.example.ehefin_mobile.core.common.DateUtils.getCurrentDateString(),
+                        updatedAt = null
+                    )
+                )
+            } catch (e: Exception) {
+                return Resource.Error("Gagal menyimpan data offline: ${e.localizedMessage}")
+            }
         }
         
         return try {
-            val requestDto = LoanRequestDto(
-                branchId = request.branchId,
-                amount = request.amount,
-                tenor = request.tenor,
-                interestRate = request.interestRate
-            )
             
             val response = loanApi.submitLoan(requestDto)
             

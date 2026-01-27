@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.ehefin_mobile.core.common.Constants
 import com.example.ehefin_mobile.core.database.EheFinDatabase
+import com.example.ehefin_mobile.core.database.dao.PendingRequestDao
 import com.example.ehefin_mobile.feature.loan.data.source.local.BranchDao
 import com.example.ehefin_mobile.feature.loan.data.source.local.LoanDao
 import com.example.ehefin_mobile.feature.loan.data.source.local.LoanHistoryDao
@@ -69,5 +70,11 @@ object DatabaseModule {
     @Singleton
     fun provideBranchDao(database: EheFinDatabase): BranchDao {
         return database.branchDao()
+    }
+    
+    @Provides
+    @Singleton
+    fun providePendingRequestDao(database: EheFinDatabase): PendingRequestDao {
+        return database.pendingRequestDao()
     }
 }

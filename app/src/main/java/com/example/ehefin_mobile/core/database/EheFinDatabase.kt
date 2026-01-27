@@ -15,6 +15,8 @@ import com.example.ehefin_mobile.feature.plafond.data.source.local.ProductDao
 import com.example.ehefin_mobile.feature.plafond.data.source.local.ProductEntity
 import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileDao
 import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileEntity
+import com.example.ehefin_mobile.core.database.entity.PendingRequestEntity
+import com.example.ehefin_mobile.core.database.dao.PendingRequestDao
 
 @Database(
     entities = [
@@ -23,9 +25,10 @@ import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileEntity
         PlafondEntity::class,
         LoanEntity::class,
         LoanHistoryEntity::class,
-        BranchEntity::class
+        BranchEntity::class,
+        PendingRequestEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -42,4 +45,7 @@ abstract class EheFinDatabase : RoomDatabase() {
     abstract fun loanDao(): LoanDao
     abstract fun loanHistoryDao(): LoanHistoryDao
     abstract fun branchDao(): BranchDao
+    
+    // Offline Sync
+    abstract fun pendingRequestDao(): PendingRequestDao
 }
