@@ -21,7 +21,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 @Composable
 fun MainScreenWrapper(
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    isLoggedIn: Boolean
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -58,6 +59,7 @@ fun MainScreenWrapper(
         EheFinNavGraph(
             navController = navController,
             startDestination = startDestination,
+            isLoggedIn = isLoggedIn,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)

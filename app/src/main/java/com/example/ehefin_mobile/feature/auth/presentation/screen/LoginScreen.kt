@@ -83,7 +83,7 @@ fun LoginScreen(
 
                 // Logo placeholder - can be replaced with actual logo
                 Box(
-                        modifier = Modifier.size(120.dp).padding(16.dp),
+                        modifier = Modifier.size(140.dp).padding(16.dp),
                         contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -91,7 +91,9 @@ fun LoginScreen(
                         style = MaterialTheme.typography.headlineLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
+
                 }
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 

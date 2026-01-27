@@ -41,11 +41,13 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ehefin_mobile.core.common.toCurrencyFormat
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
+import androidx.compose.material.icons.filled.Lock
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    isLoggedIn: Boolean,
     onNavigateToPlafond: () -> Unit,
     onNavigateToSubmitLoan: () -> Unit,
     onLogout: () -> Unit,
@@ -54,16 +56,19 @@ fun HomeScreen(
 ) {
     val plafondState by plafondViewModel.uiState.collectAsState()
 
-    // Listen for logout success event
+    // Listen for logout success event (only if logged in)
     LaunchedEffect(Unit) {
-        plafondViewModel.loadPlafond()
-        authViewModel.events.collect { event ->
-            when (event) {
-                is AuthEvent.LogoutSuccess -> onLogout()
-                else -> {}
+        if (isLoggedIn) {
+             plafondViewModel.loadPlafond()
+             authViewModel.events.collect { event ->
+                when (event) {
+                    is AuthEvent.LogoutSuccess -> onLogout()
+                    else -> {}
+                }
             }
         }
     }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,10 +80,17 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = { authViewModel.logout() }) {
+
+                    IconButton(onClick = { 
+                        if (isLoggedIn) {
+                            authViewModel.logout()
+                        } else {
+                            onLogout() // Acts as navigate to login
+                        }
+                    }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Logout"
+                            imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
+                            contentDescription = if (isLoggedIn) "Logout" else "Login"
                         )
                     }
                 }
@@ -106,13 +118,13 @@ fun HomeScreen(
         ) {
             // Welcome Section
             Text(
-                text = "Selamat Datang!",
+                text = if (isLoggedIn) "Selamat Datang!" else "Selamat Datang, Tamu!",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = "Kelola pinjaman Anda dengan mudah",
+                text = if (isLoggedIn) "Kelola pinjaman Anda dengan mudah" else "Silahkan login untuk mengakses fitur lengkap",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)
@@ -134,54 +146,83 @@ fun HomeScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    val activePlafond = plafondState.activePlafond
-                    if (activePlafond != null) {
-                        Text(
-                            text = "Limit Tersedia",
+                    if (!isLoggedIn) {
+                         Text(
+                            text = "Akses Terbatas",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = activePlafond.remainingAmount.toCurrencyFormat(),
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        androidx.compose.material3.Button(
-                            onClick = onNavigateToPlafond,
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(text = "Cek Detail Plafond")
-                        }
-                    } else {
-                        Text(
-                            text = "Belum Ada Limit",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Ajukan Plafond",
+                            text = "Login Sekarang",
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                          Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                             text = "Mulai ajukan plafond untuk dapat melakukan pinjaman.",
+                             text = "Dapatkan akses penuh untuk mengajukan pinjaman dan melihat limit plafond Anda.",
                              style = MaterialTheme.typography.bodyMedium,
                              color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         androidx.compose.material3.Button(
-                            onClick = onNavigateToPlafond,
+                            onClick = onLogout, // Navigate to Login
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text(text = "Pilih Plafond")
+                            Text(text = "Masuk / Daftar")
+                        }
+                    } else {
+                        val activePlafond = plafondState.activePlafond
+                        if (activePlafond != null) {
+                            Text(
+                                text = "Limit Tersedia",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = activePlafond.remainingAmount.toCurrencyFormat(),
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            androidx.compose.material3.Button(
+                                onClick = onNavigateToPlafond,
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(text = "Cek Detail Plafond")
+                            }
+                        } else {
+                            Text(
+                                text = "Belum Ada Limit",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Ajukan Plafond",
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                             Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                 text = "Mulai ajukan plafond untuk dapat melakukan pinjaman.",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            androidx.compose.material3.Button(
+                                onClick = onNavigateToPlafond,
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(text = "Pilih Plafond")
+                            }
                         }
                     }
                 }
@@ -200,6 +241,8 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // If guest, actions are restricted by NavGraph, but we can also visually indicate lock?
+                // For now keeping same UI, NavGraph handles redirection.
                 HomeMenuItem(
                     icon = Icons.Default.Add,
                     title = "Ajukan\nPinjaman",

@@ -17,12 +17,15 @@ import com.example.ehefin_mobile.feature.plafond.presentation.PlafondScreen
 import com.example.ehefin_mobile.feature.profile.presentation.EditProfileScreen
 import com.example.ehefin_mobile.feature.profile.presentation.ProfileScreen
 
+import androidx.compose.runtime.LaunchedEffect
+
 /** Main navigation graph for the app */
 @Composable
 fun EheFinNavGraph(
-        navController: NavHostController,
-        startDestination: String = Screen.Login.route,
-        modifier: Modifier = Modifier
+    navController: NavHostController,
+    startDestination: String = Screen.Login.route,
+    isLoggedIn: Boolean,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
@@ -32,15 +35,15 @@ fun EheFinNavGraph(
         // Auth Flow
         composable(Screen.Login.route) {
             LoginScreen(
-                    onLoginSuccess = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
-                        }
-                    },
-                    onNavigateToRegister = { navController.navigate(Screen.Register.route) },
-                    onNavigateToForgotPassword = {
-                        navController.navigate(Screen.ForgotPassword.route)
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
                     }
+                },
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) },
+                onNavigateToForgotPassword = {
+                    navController.navigate(Screen.ForgotPassword.route)
+                }
             )
         }
         
@@ -52,30 +55,59 @@ fun EheFinNavGraph(
 
         composable(Screen.Register.route) {
             RegisterScreen(
-                    onRegisterSuccess = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
-                        }
-                    },
-                    onNavigateBack = { navController.popBackStack() }
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
         // Home
         composable(Screen.Home.route) {
             HomeScreen(
-                    onNavigateToPlafond = { navController.navigate(Screen.Plafond.route) },
-                    onNavigateToSubmitLoan = { navController.navigate(Screen.SubmitLoan.route) },
-                    onLogout = {
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
-                        }
+                isLoggedIn = isLoggedIn,
+                onNavigateToPlafond = {
+                    if (isLoggedIn) {
+                        navController.navigate(Screen.Plafond.route)
+                    } else {
+                        navController.navigate(Screen.Login.route)
                     }
+                },
+                onNavigateToSubmitLoan = {
+                    if (isLoggedIn) {
+                        navController.navigate(Screen.SubmitLoan.route)
+                    } else {
+                        navController.navigate(Screen.Login.route)
+                    }
+                },
+                onLogout = {
+                    // For guests this acts as Login navigation
+                    navController.navigate(Screen.Login.route) {
+                         if (!isLoggedIn) {
+                             // If guest, we just go to login, keep backstack? 
+                             // Usually better to behave like regular nav
+                         } else {
+                             // If logout, clear backstack
+                             popUpTo(Screen.Home.route) { inclusive = true }
+                         }
+                    }
+                }
             )
         }
 
         // Profile Flow
-        composable(Screen.Profile.route) { ProfileScreen(navController = navController) }
+        composable(Screen.Profile.route) { 
+             if (isLoggedIn) {
+                 ProfileScreen(navController = navController)
+             } else {
+                 // Redirect guests to Login
+                 LaunchedEffect(Unit) {
+                     navController.navigate(Screen.Login.route)
+                 }
+             }
+        }
 
         composable(Screen.EditProfile.route) { EditProfileScreen(navController = navController) }
 
@@ -85,35 +117,35 @@ fun EheFinNavGraph(
         // Loan Flow
         composable(Screen.LoanList.route) {
             LoanListScreen(
-                    onNavigateToDetail = { loanId ->
-                        navController.navigate(Screen.LoanDetail.createRoute(loanId))
-                    },
-                    onNavigateToSubmit = { navController.navigate(Screen.SubmitLoan.route) }
+                onNavigateToDetail = { loanId ->
+                    navController.navigate(Screen.LoanDetail.createRoute(loanId))
+                },
+                onNavigateToSubmit = { navController.navigate(Screen.SubmitLoan.route) }
             )
         }
 
         composable(
-                route = Screen.LoanDetail.route,
-                arguments = listOf(navArgument("loanId") { type = NavType.LongType })
+            route = Screen.LoanDetail.route,
+            arguments = listOf(navArgument("loanId") { type = NavType.LongType })
         ) { backStackEntry ->
             val loanId = backStackEntry.arguments?.getLong("loanId") ?: 0L
             LoanDetailScreen(
-                    loanId = loanId,
-                    onNavigateToHistory = {
-                        navController.navigate(Screen.LoanHistory.createRoute(loanId))
-                    },
-                    onNavigateBack = { navController.popBackStack() }
+                loanId = loanId,
+                onNavigateToHistory = {
+                    navController.navigate(Screen.LoanHistory.createRoute(loanId))
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
         composable(Screen.SubmitLoan.route) {
             SubmitLoanScreen(
-                    onLoanSubmitted = {
-                        navController.navigate(Screen.LoanList.route) {
-                            popUpTo(Screen.SubmitLoan.route) { inclusive = true }
-                        }
-                    },
-                    onNavigateBack = { navController.popBackStack() }
+                onLoanSubmitted = {
+                    navController.navigate(Screen.LoanList.route) {
+                        popUpTo(Screen.SubmitLoan.route) { inclusive = true }
+                    }
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

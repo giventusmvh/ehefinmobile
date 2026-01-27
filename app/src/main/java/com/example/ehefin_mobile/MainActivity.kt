@@ -48,16 +48,13 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     
-                    // Determine start destination based on login state
-                    val startDestination = if (isLoggedIn) {
-                        Screen.Home.route
-                    } else {
-                        Screen.Login.route
-                    }
+                    // Always start at Home, let the screen handle the state
+                    val startDestination = Screen.Home.route
                     
                     MainScreenWrapper(
                         navController = navController,
-                        startDestination = startDestination
+                        startDestination = startDestination,
+                        isLoggedIn = isLoggedIn
                     )
                 }
             }
@@ -83,7 +80,8 @@ fun DefaultPreview() {
         val navController = rememberNavController()
         EheFinNavGraph(
             navController = navController,
-            startDestination = Screen.Login.route
+            startDestination = Screen.Login.route,
+            isLoggedIn = false
         )
     }
 }
