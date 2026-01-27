@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.ehefin_mobile.core.datastore.TokenManager
 import com.example.ehefin_mobile.core.designsystem.theme.EheFinTheme
 import com.example.ehefin_mobile.navigation.EheFinNavGraph
+import com.example.ehefin_mobile.navigation.MainScreenWrapper
 import com.example.ehefin_mobile.navigation.Screen
 import dagger.hilt.android.AndroidEntryPoint
 import android.Manifest
@@ -54,7 +55,7 @@ class MainActivity : ComponentActivity() {
                         Screen.Login.route
                     }
                     
-                    EheFinNavGraph(
+                    MainScreenWrapper(
                         navController = navController,
                         startDestination = startDestination
                     )

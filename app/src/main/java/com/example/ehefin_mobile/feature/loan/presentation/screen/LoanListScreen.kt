@@ -37,7 +37,6 @@ import com.example.ehefin_mobile.feature.loan.presentation.viewmodel.LoanViewMod
 fun LoanListScreen(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToSubmit: () -> Unit,
-    onNavigateBack: () -> Unit,
     viewModel: LoanViewModel = hiltViewModel()
 ) {
     val state by viewModel.listState.collectAsState()
@@ -45,15 +44,7 @@ fun LoanListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Pinjaman") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
-                        )
-                    }
-                }
+                title = { Text("Riwayat Pinjaman") }
             )
         },
         floatingActionButton = {

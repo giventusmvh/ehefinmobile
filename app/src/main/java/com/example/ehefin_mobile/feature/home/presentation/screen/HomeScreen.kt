@@ -36,22 +36,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.core.common.toCurrencyFormat
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToLoans: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onNavigateToPlafond: () -> Unit,
     onNavigateToSubmitLoan: () -> Unit,
     onLogout: () -> Unit,
-    authViewModel: AuthViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    plafondViewModel: com.example.ehefin_mobile.feature.plafond.presentation.PlafondViewModel = hiltViewModel()
 ) {
+    val plafondState by plafondViewModel.uiState.collectAsState()
+
     // Listen for logout success event
     LaunchedEffect(Unit) {
+        plafondViewModel.loadPlafond()
         authViewModel.events.collect { event ->
             when (event) {
                 is AuthEvent.LogoutSuccess -> onLogout()
@@ -70,12 +75,6 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToProfile) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Profil"
-                        )
-                    }
                     IconButton(onClick = { authViewModel.logout() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -121,43 +120,94 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Quick Actions Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            // Dashboard Cards
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             ) {
-                HomeMenuItem(
-                    icon = Icons.Default.History,
-                    title = "Riwayat\nPinjaman",
-                    onClick = onNavigateToLoans,
-                    modifier = Modifier.weight(1f)
-                )
-                HomeMenuItem(
-                    icon = Icons.Default.CreditCard,
-                    title = "Plafond\nSaya",
-                    onClick = onNavigateToPlafond,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    val activePlafond = plafondState.activePlafond
+                    if (activePlafond != null) {
+                        Text(
+                            text = "Limit Tersedia",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = activePlafond.remainingAmount.toCurrencyFormat(),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        androidx.compose.material3.Button(
+                            onClick = onNavigateToPlafond,
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(text = "Cek Detail Plafond")
+                        }
+                    } else {
+                        Text(
+                            text = "Belum Ada Limit",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Ajukan Plafond",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                         Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                             text = "Mulai ajukan plafond untuk dapat melakukan pinjaman.",
+                             style = MaterialTheme.typography.bodyMedium,
+                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        androidx.compose.material3.Button(
+                            onClick = onNavigateToPlafond,
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(text = "Pilih Plafond")
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "Menu Cepat",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 HomeMenuItem(
-                    icon = Icons.Default.Person,
-                    title = "Profil\nSaya",
-                    onClick = onNavigateToProfile,
-                    modifier = Modifier.weight(1f)
-                )
-                HomeMenuItem(
-                    icon = Icons.Default.AccountBalance,
+                    icon = Icons.Default.Add,
                     title = "Ajukan\nPinjaman",
                     onClick = onNavigateToSubmitLoan,
                     modifier = Modifier.weight(1f)
                 )
+                 // Placeholder for another action or just keep one primary action
+                 Spacer(modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(32.dp))

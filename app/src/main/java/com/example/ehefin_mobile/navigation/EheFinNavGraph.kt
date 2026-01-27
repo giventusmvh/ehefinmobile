@@ -1,6 +1,7 @@
 package com.example.ehefin_mobile.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,9 +21,14 @@ import com.example.ehefin_mobile.feature.profile.presentation.ProfileScreen
 @Composable
 fun EheFinNavGraph(
         navController: NavHostController,
-        startDestination: String = Screen.Login.route
+        startDestination: String = Screen.Login.route,
+        modifier: Modifier = Modifier
 ) {
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
         // Auth Flow
         composable(Screen.Login.route) {
             LoginScreen(
@@ -58,8 +64,6 @@ fun EheFinNavGraph(
         // Home
         composable(Screen.Home.route) {
             HomeScreen(
-                    onNavigateToLoans = { navController.navigate(Screen.LoanList.route) },
-                    onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                     onNavigateToPlafond = { navController.navigate(Screen.Plafond.route) },
                     onNavigateToSubmitLoan = { navController.navigate(Screen.SubmitLoan.route) },
                     onLogout = {
@@ -84,8 +88,7 @@ fun EheFinNavGraph(
                     onNavigateToDetail = { loanId ->
                         navController.navigate(Screen.LoanDetail.createRoute(loanId))
                     },
-                    onNavigateToSubmit = { navController.navigate(Screen.SubmitLoan.route) },
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateToSubmit = { navController.navigate(Screen.SubmitLoan.route) }
             )
         }
 

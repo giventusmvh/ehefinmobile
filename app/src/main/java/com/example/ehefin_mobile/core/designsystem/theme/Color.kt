@@ -2,12 +2,12 @@ package com.example.ehefin_mobile.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary Colors - Modern Blue/Teal
-val Primary = Color(0xFF0066CC)
-val PrimaryLight = Color(0xFF4D94FF)
-val PrimaryDark = Color(0xFF004C99)
-val PrimaryContainer = Color(0xFFD6E6FF)
-val OnPrimaryContainer = Color(0xFF001A4D)
+// Primary Colors - Brand Indigo (Website Match)
+val Primary = Color(0xFF4F46E5) // Brand 600
+val PrimaryLight = Color(0xFF818CF8) // Brand 400
+val PrimaryDark = Color(0xFF3730A3) // Brand 800
+val PrimaryContainer = Color(0xFFE0E7FF) // Brand 100
+val OnPrimaryContainer = Color(0xFF1E1B4B) // Brand 950
 
 // Secondary Colors - Accent Orange
 val Secondary = Color(0xFFFF8C00)

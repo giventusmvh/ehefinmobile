@@ -347,3 +347,14 @@ fun uriToFile(context: android.content.Context, uri: Uri): File? {
         return null
     }
 }
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+    HorizontalDivider()
+}
