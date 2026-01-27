@@ -17,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -172,6 +174,9 @@ fun EditProfileScreen(
                 label = "KTP",
                 isUploaded = ktpFile != null || !uiState.profile?.ktpPath.isNullOrEmpty(),
                 isPending = ktpFile != null,
+                file = ktpFile,
+                imageUrl = uiState.profile?.ktpPath,
+                accessToken = uiState.accessToken,
                 onUpload = {
                     activeUploadType = "KTP"
                     documentLauncher.launch("image/*")
@@ -182,6 +187,9 @@ fun EditProfileScreen(
                 label = "Kartu Keluarga",
                 isUploaded = kkFile != null || !uiState.profile?.kkPath.isNullOrEmpty(),
                 isPending = kkFile != null,
+                file = kkFile,
+                imageUrl = uiState.profile?.kkPath,
+                accessToken = uiState.accessToken,
                 onUpload = {
                     activeUploadType = "KK"
                     documentLauncher.launch("image/*")
@@ -192,6 +200,9 @@ fun EditProfileScreen(
                 label = "NPWP",
                 isUploaded = npwpFile != null || !uiState.profile?.npwpPath.isNullOrEmpty(),
                 isPending = npwpFile != null,
+                file = npwpFile,
+                imageUrl = uiState.profile?.npwpPath,
+                accessToken = uiState.accessToken,
                 onUpload = {
                     activeUploadType = "NPWP"
                     documentLauncher.launch("image/*")
@@ -246,38 +257,76 @@ fun DocumentUploadItem(
     label: String,
     isUploaded: Boolean,
     isPending: Boolean = false,
+    file: File? = null,
+    imageUrl: String? = null,
+    accessToken: String? = null,
     onUpload: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = label, style = MaterialTheme.typography.bodyMedium)
-                when {
-                    isPending -> {
-                        Text(
-                            text = "Siap diupload (simpan untuk mengunggah)",
-                            color = MaterialTheme.colorScheme.tertiary,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                    isUploaded -> {
-                        Text(
-                            text = "Sudah diupload",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.labelSmall
-                        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = label, style = MaterialTheme.typography.bodyMedium)
+                    when {
+                        isPending -> {
+                            Text(
+                                text = "Siap diupload (simpan untuk mengunggah)",
+                                color = MaterialTheme.colorScheme.tertiary,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        isUploaded -> {
+                            Text(
+                                text = "Sudah diupload",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
                 }
+                IconButton(onClick = onUpload) {
+                    Icon(Icons.Default.Upload, contentDescription = "Upload $label")
+                }
             }
-            IconButton(onClick = onUpload) {
-                Icon(Icons.Default.Upload, contentDescription = "Upload $label")
+            
+            // Show preview if available (either file or url)
+            if (file != null || !imageUrl.isNullOrEmpty()) {
+                val context = LocalContext.current
+                var model: Any? = file
+                
+                if (file == null && !imageUrl.isNullOrEmpty()) {
+                    model = if (accessToken != null) {
+                        coil.request.ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .addHeader("Authorization", "Bearer $accessToken")
+                            .crossfade(true)
+                            .build()
+                    } else {
+                        coil.request.ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build()
+                    }
+                }
+                
+                if (model != null) {
+                    AsyncImage(
+                        model = model,
+                        contentDescription = "Preview $label",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
         }
     }

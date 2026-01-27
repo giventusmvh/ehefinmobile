@@ -13,6 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ehefin_mobile.navigation.Screen
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,8 +72,6 @@ fun ProfileScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // EheFinOfflineBanner(isVisible = false) // Removed custom banner
-
                         // Profile Header
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -118,9 +120,21 @@ fun ProfileScreen(
 
                         // Documents
                         SectionHeader(title = "Dokumen")
-                        DocumentStatusItem(label = "KTP", isUploaded = !uiState.profile?.ktpPath.isNullOrEmpty())
-                        DocumentStatusItem(label = "Kartu Keluarga", isUploaded = !uiState.profile?.kkPath.isNullOrEmpty())
-                        DocumentStatusItem(label = "NPWP", isUploaded = !uiState.profile?.npwpPath.isNullOrEmpty())
+                        DocumentStatusItem(
+                            label = "KTP",
+                            imageUrl = uiState.profile?.ktpPath,
+                            accessToken = uiState.accessToken
+                        )
+                        DocumentStatusItem(
+                            label = "Kartu Keluarga",
+                            imageUrl = uiState.profile?.kkPath,
+                            accessToken = uiState.accessToken
+                        )
+                        DocumentStatusItem(
+                            label = "NPWP",
+                            imageUrl = uiState.profile?.npwpPath,
+                            accessToken = uiState.accessToken
+                        )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -177,38 +191,75 @@ fun InfoItem(label: String, value: String?) {
 }
 
 @Composable
-fun DocumentStatusItem(label: String, isUploaded: Boolean) {
-    Row(
+fun DocumentStatusItem(label: String, imageUrl: String?, accessToken: String?) {
+    Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        if (isUploaded) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "Terupload",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelLarge
+                text = label,
+                style = MaterialTheme.typography.bodyLarge
             )
-        } else {
-            Text(
-                text = "Belum Ada",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.labelLarge
+            val isUploaded = !imageUrl.isNullOrEmpty()
+            if (isUploaded) {
+                Text(
+                    text = "Terupload",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            } else {
+                Text(
+                    text = "Belum Ada",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+        
+        if (!imageUrl.isNullOrEmpty()) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            
+            // Build request with auth header
+            val model = remember(imageUrl, accessToken) {
+                if (accessToken != null) {
+                    coil.request.ImageRequest.Builder(context)
+                        .data(imageUrl)
+                        .addHeader("Authorization", "Bearer $accessToken")
+                        .crossfade(true)
+                        .build()
+                } else {
+                    coil.request.ImageRequest.Builder(context)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build()
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            AsyncImage(
+                model = model,
+                contentDescription = "Preview $label",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(4.dp),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
         }
     }
 }
 
-// Temporary placeholder for RefreshIndicator if not already available in common
+
 @Composable
-fun RefreshIndicator(isRefreshing: Boolean, onRefresh: () -> Unit, content: @Composable () -> Unit) {
+fun RefreshIndicator(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    content: @Composable () -> Unit
+) {
     // In a real app we'd use PullRefresh or similar. For now just passing content.
-    // If I had implemented a PullRefresh component I would use it.
-    // Since I don't recall creating one in 'components/', I will just render content.
     content()
 }
-

@@ -22,7 +22,8 @@ data class ProfileUiState(
         val profile: UserProfile? = null,
         val error: String? = null,
         val isUpdating: Boolean = false,
-        val updateSuccess: Boolean = false
+        val updateSuccess: Boolean = false,
+        val accessToken: String? = null
 )
 
 sealed class ProfileEvent {
@@ -47,7 +48,8 @@ class ProfileViewModel
 @Inject
 constructor(
         private val getProfileUseCase: GetProfileUseCase,
-        private val updateProfileUseCase: UpdateProfileUseCase
+        private val updateProfileUseCase: UpdateProfileUseCase,
+        private val tokenManager: com.example.ehefin_mobile.core.datastore.TokenManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -57,6 +59,12 @@ constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
+        // Load token
+        viewModelScope.launch {
+            tokenManager.getAccessToken().collect { token ->
+                _uiState.update { it.copy(accessToken = token) }
+            }
+        }
         loadProfile()
     }
 

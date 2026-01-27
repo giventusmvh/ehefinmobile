@@ -14,9 +14,9 @@ fun ProfileResponseDto.toEntity(): ProfileEntity {
             birthdate = profile?.birthdate,
             phoneNumber = profile?.phone,
             address = profile?.address,
-            ktpPath = profile?.ktpUrl,
-            kkPath = profile?.kkUrl,
-            npwpPath = profile?.npwpUrl,
+            ktpPath = profile?.ktpUrl?.let { sanitizeUrl(it) },
+            kkPath = profile?.kkUrl?.let { sanitizeUrl(it) },
+            npwpPath = profile?.npwpUrl?.let { sanitizeUrl(it) },
             bankName = profile?.bankName,
             accountNumber = profile?.accountNumber,
             accountHolderName = profile?.accountHolderName,
@@ -64,12 +64,29 @@ fun UpdateProfileResponseDto.toDomain(
             birthdate = birthdate,
             phoneNumber = phoneNumber,
             address = address,
-            ktpPath = ktpUrl,
-            kkPath = kkUrl,
-            npwpPath = npwpUrl,
+            ktpPath = ktpUrl?.let { sanitizeUrl(it) },
+            kkPath = kkUrl?.let { sanitizeUrl(it) },
+            npwpPath = npwpUrl?.let { sanitizeUrl(it) },
             bankName = bankName,
             accountNumber = accountNumber,
             accountHolderName = accountHolderName,
             isComplete = isComplete ?: false
     )
+}
+
+private fun sanitizeUrl(url: String): String {
+    // Handle Postman variable placeholder
+    var sanitized = url.replace("{{baseURL}}", "http://10.0.2.2:8080")
+    
+    // Handle localhost for emulator
+    sanitized = sanitized.replace("localhost", "10.0.2.2")
+    
+    // Handle relative paths
+    if (sanitized.startsWith("/")) {
+        sanitized = "http://10.0.2.2:8080$sanitized"
+    } else if (sanitized.startsWith("uploads/")) {
+        sanitized = "http://10.0.2.2:8080/$sanitized"
+    }
+    
+    return sanitized
 }
