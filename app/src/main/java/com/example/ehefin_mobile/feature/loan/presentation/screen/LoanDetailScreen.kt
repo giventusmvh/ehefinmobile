@@ -1,9 +1,12 @@
 package com.example.ehefin_mobile.feature.loan.presentation.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -52,8 +57,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ehefin_mobile.core.common.formatToRupiah
 import com.example.ehefin_mobile.core.common.toDisplayDate
 import com.example.ehefin_mobile.core.designsystem.components.EheFinLoadingIndicator
+import com.example.ehefin_mobile.core.designsystem.theme.StatusApproved
+import com.example.ehefin_mobile.core.designsystem.theme.StatusPending
+import com.example.ehefin_mobile.core.designsystem.theme.StatusRejected
 import com.example.ehefin_mobile.feature.loan.domain.model.LoanApplication
 import com.example.ehefin_mobile.feature.loan.domain.model.LoanHistory
+import com.example.ehefin_mobile.feature.loan.domain.model.LoanStatus
 import com.example.ehefin_mobile.feature.loan.presentation.components.LoanStatusBadge
 import com.example.ehefin_mobile.feature.loan.presentation.viewmodel.LoanViewModel
 
@@ -290,51 +299,140 @@ fun InfoRow(label: String, value: String) {
 }
 
 @Composable
-fun TimelineItem(history: LoanHistory, isLast: Boolean) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Dot
+fun TimelineItem(
+    history: LoanHistory,
+    isLast: Boolean
+) {
+    val status = history.status
+    
+    val (icon, color) = when {
+        status.isApproved() -> Icons.Outlined.CheckCircle to StatusApproved
+        status.isRejected() -> Icons.Default.Close to StatusRejected
+        else -> Icons.Default.HourglassEmpty to StatusPending
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min) 
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(32.dp)
+        ) {
+            // Icon
             Box(
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-            // Line
+                    .background(color.copy(alpha = 0.1f))
+                    .border(1.dp, color, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            
+            // Connecting Line
             if (!isLast) {
                 Box(
                     modifier = Modifier
                         .width(2.dp)
-                        .height(60.dp) // Adjust height dynamically if needed
-                        .background(MaterialTheme.colorScheme.outlineVariant)
+                        .weight(1f)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 )
             }
         }
+        
         Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.padding(bottom = if (isLast) 0.dp else 24.dp)) {
-            LoanStatusBadge(status = history.status)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = history.createdAt.toDisplayDate(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (!history.note.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = history.note,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(8.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
+        
+        Column(
+            modifier = Modifier
+                .padding(bottom = if (isLast) 0.dp else 32.dp)
+                .weight(1f)
+        ) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = getStatusDisplayName(status),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = history.createdAt.toDisplayDate(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    if (!history.approvedBy.isNullOrEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        val roleText = if (!history.approvedByRole.isNullOrEmpty()) " (${history.approvedByRole})" else ""
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${history.approvedBy}$roleText",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    if (!history.note.isNullOrEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = history.note,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+// Helper to get consistent display name
+fun getStatusDisplayName(status: LoanStatus): String {
+    return when (status) {
+        LoanStatus.SUBMITTED -> "Pengajuan Diterima"
+        LoanStatus.MARKETING_APPROVED -> "Disetujui Marketing"
+        LoanStatus.MARKETING_REJECTED -> "Ditolak Marketing"
+        LoanStatus.BRANCH_MANAGER_APPROVED -> "Disetujui Kepala Cabang"
+        LoanStatus.BRANCH_MANAGER_REJECTED -> "Ditolak Kepala Cabang"
+        LoanStatus.DISBURSED -> "Pinjaman Disetujui"
+        LoanStatus.REJECTED -> "Pengajuan Ditolak"
     }
 }

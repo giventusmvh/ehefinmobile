@@ -138,13 +138,13 @@ data class LoanHistoryDto(
     @SerializedName("note")
     val note: String?,
     
-    @SerializedName("approvedBy")
+    @SerializedName("approvedByName")
     val approvedBy: String?,
     
     @SerializedName("approvedByRole")
     val approvedByRole: String?,
     
-    @SerializedName("approvedByBranchName")
+    @SerializedName("approvedByBranch")
     val approvedByBranchName: String?,
     
     @SerializedName("createdAt")
