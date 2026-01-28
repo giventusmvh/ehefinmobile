@@ -252,4 +252,3 @@ fun RegisterScreen(
         }
     }
 }
-

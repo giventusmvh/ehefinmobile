@@ -1,0 +1,7 @@
+root = true
+
+[*.{kt,kts}]
+disabled_rules = standard:function-naming,standard:package-name,standard:no-wildcard-imports
+ktlint_no-wildcard-imports = disabled
+ktlint_standard_function-naming = disabled
+ij_kotlin_packages_to_use_import_on_demand = 100
