@@ -1,8 +1,11 @@
 package com.example.ehefin_mobile.feature.profile.presentation
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,11 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -27,31 +33,40 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.layout.ContentScale
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +78,7 @@ fun EditProfileScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     // State for form fields
     var nik by remember { mutableStateOf("") }
@@ -77,6 +93,10 @@ fun EditProfileScreen(
     var ktpFile by remember { mutableStateOf<File?>(null) }
     var kkFile by remember { mutableStateOf<File?>(null) }
     var npwpFile by remember { mutableStateOf<File?>(null) }
+
+    // Bottom sheet state
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     // Initialize state from profile
     LaunchedEffect(uiState.profile) {
@@ -100,8 +120,13 @@ fun EditProfileScreen(
 
     // Using a map to track which doc is being uploaded
     var activeUploadType by remember { mutableStateOf<String?>(null) }
-
-    val documentLauncher = rememberLauncherForActivityResult(
+    
+    // Camera URI state
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
+    var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+    
+    // Gallery launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
@@ -115,6 +140,99 @@ fun EditProfileScreen(
                     }
                 }
             }
+        }
+    }
+    
+    // Camera launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            pendingCameraFile?.let { file ->
+                activeUploadType?.let { type ->
+                    when (type) {
+                        "KTP" -> ktpFile = file
+                        "KK" -> kkFile = file
+                        "NPWP" -> npwpFile = file
+                    }
+                }
+            }
+        }
+        pendingCameraFile = null
+        cameraImageUri = null
+    }
+    
+    // Camera permission launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Create file and launch camera
+            val imageFile = createImageFile(context)
+            pendingCameraFile = imageFile
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                imageFile
+            )
+            cameraImageUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            scope.launch {
+                snackbarHostState.showSnackbar("Izin kamera diperlukan untuk mengambil foto")
+            }
+        }
+    }
+    
+    // Function to launch camera with permission check
+    fun launchCamera() {
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context, 
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        
+        if (hasPermission) {
+            val imageFile = createImageFile(context)
+            pendingCameraFile = imageFile
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                imageFile
+            )
+            cameraImageUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+    
+    // Function to launch gallery
+    fun launchGallery() {
+        galleryLauncher.launch("image/*")
+    }
+    
+    // Function to show bottom sheet for upload options
+    fun showUploadOptions(docType: String) {
+        activeUploadType = docType
+        showBottomSheet = true
+    }
+
+    // Bottom sheet for image source picker
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheet = false },
+            sheetState = sheetState
+        ) {
+            ImageSourcePickerSheet(
+                onCameraClick = {
+                    showBottomSheet = false
+                    launchCamera()
+                },
+                onGalleryClick = {
+                    showBottomSheet = false
+                    launchGallery()
+                }
+            )
         }
     }
 
@@ -205,10 +323,7 @@ fun EditProfileScreen(
                 file = ktpFile,
                 imageUrl = uiState.profile?.ktpPath,
                 accessToken = uiState.accessToken,
-                onUpload = {
-                    activeUploadType = "KTP"
-                    documentLauncher.launch("image/*")
-                }
+                onUpload = { showUploadOptions("KTP") }
             )
 
             DocumentUploadItem(
@@ -218,10 +333,7 @@ fun EditProfileScreen(
                 file = kkFile,
                 imageUrl = uiState.profile?.kkPath,
                 accessToken = uiState.accessToken,
-                onUpload = {
-                    activeUploadType = "KK"
-                    documentLauncher.launch("image/*")
-                }
+                onUpload = { showUploadOptions("KK") }
             )
 
             DocumentUploadItem(
@@ -231,10 +343,7 @@ fun EditProfileScreen(
                 file = npwpFile,
                 imageUrl = uiState.profile?.npwpPath,
                 accessToken = uiState.accessToken,
-                onUpload = {
-                    activeUploadType = "NPWP"
-                    documentLauncher.launch("image/*")
-                }
+                onUpload = { showUploadOptions("NPWP") }
             )
 
             if (uiState.error != null) {
@@ -277,6 +386,83 @@ fun EditProfileScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ImageSourcePickerSheet(
+    onCameraClick: () -> Unit,
+    onGalleryClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "Pilih Sumber Gambar",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCameraClick() }
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = "Ambil Foto",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Gunakan kamera untuk mengambil foto",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        HorizontalDivider()
+        
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onGalleryClick() }
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Image,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = "Pilih dari Galeri",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Pilih gambar yang sudah ada di perangkat",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -358,6 +544,13 @@ fun DocumentUploadItem(
             }
         }
     }
+}
+
+// Helper to create image file for camera
+fun createImageFile(context: android.content.Context): File {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val imageFileName = "JPEG_${timeStamp}_"
+    return File.createTempFile(imageFileName, ".jpg", context.cacheDir)
 }
 
 // Helper to convert Uri to File
