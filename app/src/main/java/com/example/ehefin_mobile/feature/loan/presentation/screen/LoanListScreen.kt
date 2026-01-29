@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -40,6 +41,11 @@ fun LoanListScreen(
     viewModel: LoanViewModel = hiltViewModel()
 ) {
     val state by viewModel.listState.collectAsState()
+
+    // Load loans when screen is visible
+    LaunchedEffect(Unit) {
+        viewModel.loadLoans()
+    }
 
     Scaffold(
         topBar = {

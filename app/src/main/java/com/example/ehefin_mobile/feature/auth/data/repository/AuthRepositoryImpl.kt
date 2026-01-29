@@ -2,6 +2,7 @@ package com.example.ehefin_mobile.feature.auth.data.repository
 
 import com.example.ehefin_mobile.core.common.Resource
 import com.example.ehefin_mobile.core.datastore.TokenManager
+import com.example.ehefin_mobile.core.database.DatabaseCleaner
 import com.example.ehefin_mobile.feature.auth.data.mapper.toDomain
 import com.example.ehefin_mobile.feature.auth.data.source.remote.AuthApi
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.ForgotPasswordRequest
@@ -24,6 +25,7 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
     private val tokenManager: TokenManager,
+    private val databaseCleaner: DatabaseCleaner,
     private val gson: Gson
 ) : AuthRepository {
     
@@ -52,19 +54,25 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun logout(): Resource<Unit> {
         return try {
             val response = authApi.logout()
-            if (response.isSuccessful) {
-                tokenManager.clearSession()
-                Resource.Success(Unit)
-            } else {
-                // Even if API fails, clear local session
-                tokenManager.clearSession()
-                Resource.Success(Unit)
-            }
+            // Clear local data regardless of API response
+            clearLocalData()
+            Resource.Success(Unit)
         } catch (e: Exception) {
             // Clear local session even on network error
-            tokenManager.clearSession()
+            clearLocalData()
             Resource.Success(Unit)
         }
+    }
+    
+    /**
+     * Clears all local user data including tokens and database cache.
+     * This ensures no user data persists after logout.
+     */
+    private suspend fun clearLocalData() {
+        // Clear session tokens and user data from DataStore
+        tokenManager.clearSession()
+        // Clear all cached data from Room database
+        databaseCleaner.clearAllData()
     }
     
     override suspend fun forgotPassword(email: String): Resource<Unit> {
@@ -124,6 +132,13 @@ class AuthRepositoryImpl @Inject constructor(
         return if (response.isSuccessful && response.body()?.success == true) {
             val authData = response.body()!!.data!!
             
+            // Check if user switched (different from last logged in user)
+            val lastUserId = tokenManager.getLastLoggedInUserId().first()
+            if (lastUserId != null && lastUserId != authData.userId) {
+                // User switched - clear all cached data
+                databaseCleaner.clearAllData()
+            }
+            
             // Save session to DataStore
             tokenManager.saveUserSession(
                 token = authData.token,
@@ -131,6 +146,9 @@ class AuthRepositoryImpl @Inject constructor(
                 email = authData.email,
                 name = authData.name
             )
+            
+            // Save current user as last logged in user
+            tokenManager.saveLastLoggedInUserId(authData.userId)
             
             Resource.Success(authData.toDomain())
         } else {

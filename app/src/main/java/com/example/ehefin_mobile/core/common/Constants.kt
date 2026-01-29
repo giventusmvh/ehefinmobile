@@ -8,6 +8,7 @@ object Constants {
     const val KEY_USER_EMAIL = "user_email"
     const val KEY_USER_NAME = "user_name"
     const val KEY_IS_LOGGED_IN = "is_logged_in"
+    const val KEY_LAST_LOGGED_IN_USER_ID = "last_logged_in_user_id"
     
     // Room Database
     const val DATABASE_NAME = "ehefin_database"

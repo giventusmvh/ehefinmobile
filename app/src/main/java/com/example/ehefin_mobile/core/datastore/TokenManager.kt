@@ -34,6 +34,7 @@ class TokenManager @Inject constructor(
         private val USER_EMAIL = stringPreferencesKey(Constants.KEY_USER_EMAIL)
         private val USER_NAME = stringPreferencesKey(Constants.KEY_USER_NAME)
         private val IS_LOGGED_IN = booleanPreferencesKey(Constants.KEY_IS_LOGGED_IN)
+        private val LAST_LOGGED_IN_USER_ID = longPreferencesKey(Constants.KEY_LAST_LOGGED_IN_USER_ID)
     }
     
     // Access Token
@@ -110,11 +111,44 @@ class TokenManager @Inject constructor(
     }
     
     /**
+     * Get the last logged in user ID
+     * Used to detect user switch and clear cache if needed
+     */
+    fun getLastLoggedInUserId(): Flow<Long?> = dataStore.data.map { preferences ->
+        preferences[LAST_LOGGED_IN_USER_ID]
+    }
+    
+    /**
+     * Save the last logged in user ID
+     * Should be called after successful login and cache validation
+     */
+    suspend fun saveLastLoggedInUserId(userId: Long) {
+        dataStore.edit { preferences ->
+            preferences[LAST_LOGGED_IN_USER_ID] = userId
+        }
+    }
+    
+    /**
      * Clear all session data (logout)
+     * Note: LAST_LOGGED_IN_USER_ID is intentionally preserved
+     * to detect user switch on next login
      */
     suspend fun clearSession() {
         dataStore.edit { preferences ->
+            val lastUserId = preferences[LAST_LOGGED_IN_USER_ID]
             preferences.clear()
+            // Preserve last logged in user ID for user switch detection
+            lastUserId?.let { preferences[LAST_LOGGED_IN_USER_ID] = it }
+        }
+    }
+    
+    /**
+     * Clear last logged in user ID
+     * Call this when you want to reset user switch detection
+     */
+    suspend fun clearLastLoggedInUserId() {
+        dataStore.edit { preferences ->
+            preferences.remove(LAST_LOGGED_IN_USER_ID)
         }
     }
 }

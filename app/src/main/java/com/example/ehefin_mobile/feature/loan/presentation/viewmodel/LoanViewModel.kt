@@ -3,6 +3,7 @@ package com.example.ehefin_mobile.feature.loan.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ehefin_mobile.core.common.Resource
+import com.example.ehefin_mobile.core.datastore.TokenManager
 import com.example.ehefin_mobile.feature.loan.domain.model.Branch
 import com.example.ehefin_mobile.feature.loan.domain.model.LoanApplication
 import com.example.ehefin_mobile.feature.loan.domain.model.LoanHistory
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -70,7 +72,8 @@ class LoanViewModel @Inject constructor(
     private val getLoanDetailUseCase: GetLoanDetailUseCase,
     private val getLoanHistoryUseCase: GetLoanHistoryUseCase,
     private val submitLoanUseCase: SubmitLoanUseCase,
-    private val getBranchesUseCase: GetBranchesUseCase
+    private val getBranchesUseCase: GetBranchesUseCase,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
     
     // Loan List State
@@ -90,7 +93,8 @@ class LoanViewModel @Inject constructor(
     val events = _events.asSharedFlow()
     
     init {
-        loadLoans()
+        // Don't auto-load loans in init, let the screen trigger it
+        // This ensures proper auth state check when screen is visible
     }
     
     /**
@@ -98,6 +102,18 @@ class LoanViewModel @Inject constructor(
      */
     fun loadLoans() {
         viewModelScope.launch {
+            // Check if user is logged in
+            val isLoggedIn = tokenManager.isLoggedIn().first()
+            if (!isLoggedIn) {
+                _listState.update { 
+                    it.copy(
+                        isLoading = false,
+                        error = "Silakan login terlebih dahulu",
+                        loans = emptyList()
+                    )
+                }
+                return@launch
+            }
             getLoansUseCase().collect { result ->
                 _listState.update { state ->
                     when (result) {
@@ -123,9 +139,22 @@ class LoanViewModel @Inject constructor(
      * Load loan detail by ID
      */
     fun loadLoanDetail(loanId: Long) {
-        _detailState.update { LoanDetailUiState(isLoading = true) }
-        
         viewModelScope.launch {
+            // Check if user is logged in
+            val isLoggedIn = tokenManager.isLoggedIn().first()
+            if (!isLoggedIn) {
+                _detailState.update { 
+                    it.copy(
+                        isLoading = false,
+                        error = "Silakan login terlebih dahulu",
+                        loan = null,
+                        history = emptyList()
+                    )
+                }
+                return@launch
+            }
+            
+            _detailState.update { LoanDetailUiState(isLoading = true) }
             // Load loan detail
             launch {
                 getLoanDetailUseCase(loanId).collect { result ->
