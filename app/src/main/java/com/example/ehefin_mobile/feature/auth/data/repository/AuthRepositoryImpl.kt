@@ -5,6 +5,7 @@ import com.example.ehefin_mobile.core.datastore.TokenManager
 import com.example.ehefin_mobile.feature.auth.data.mapper.toDomain
 import com.example.ehefin_mobile.feature.auth.data.source.remote.AuthApi
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.ForgotPasswordRequest
+import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.FirebaseLoginRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.LoginRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.RegisterRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.ResetPasswordRequest
@@ -106,6 +107,15 @@ class AuthRepositoryImpl @Inject constructor(
     
     override suspend fun clearSession() {
         tokenManager.clearSession()
+    }
+
+    override suspend fun loginWithFirebase(idToken: String, fcmToken: String?): Resource<AuthResult> {
+        return try {
+            val response = authApi.firebaseLogin(FirebaseLoginRequest(idToken, fcmToken))
+            handleAuthResponse(response)
+        } catch (e: Exception) {
+            Resource.Error("Terjadi kesalahan: ${e.localizedMessage}")
+        }
     }
     
     private suspend fun handleAuthResponse(

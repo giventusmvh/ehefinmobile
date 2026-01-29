@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ehefin_mobile.core.common.Resource
+import com.example.ehefin_mobile.feature.auth.domain.usecase.FirebaseLoginUseCase
 import com.example.ehefin_mobile.feature.auth.domain.usecase.ForgotPasswordUseCase
 import com.example.ehefin_mobile.feature.auth.domain.usecase.LoginUseCase
 import com.example.ehefin_mobile.feature.auth.domain.usecase.LogoutUseCase
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 /**
@@ -58,6 +60,7 @@ class AuthViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val forgotPasswordUseCase: ForgotPasswordUseCase,
+    private val firebaseLoginUseCase: FirebaseLoginUseCase,
     private val registerFcmTokenUseCase: RegisterFcmTokenUseCase
 ) : ViewModel() {
     
@@ -198,7 +201,7 @@ class AuthViewModel @Inject constructor(
     fun forgotPassword() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            
+
             when (val result = forgotPasswordUseCase(
                 email = _uiState.value.forgotPasswordEmail
             )) {
@@ -207,11 +210,44 @@ class AuthViewModel @Inject constructor(
                     _events.emit(AuthEvent.ForgotPasswordEmailSent)
                 }
                 is Resource.Error -> {
-                    _uiState.update { 
-                        it.copy(isLoading = false, error = result.message) 
+                    _uiState.update {
+                        it.copy(isLoading = false, error = result.message)
                     }
                 }
                 is Resource.Loading -> {}
+            }
+        }
+    }
+
+    /**
+     * Login with Firebase ID token (Google Sign-In)
+     * @param idToken Firebase ID token from Google Sign-In
+     */
+    fun loginWithFirebase(idToken: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            // Get FCM token if available
+            val fcmToken = try {
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().token.await()
+            } catch (e: Exception) {
+                Log.e("FCM", "Failed to get FCM token", e)
+                null
+            }
+
+            when (val result = firebaseLoginUseCase(idToken, fcmToken)) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.emit(AuthEvent.LoginSuccess)
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, error = result.message)
+                    }
+                }
+                is Resource.Loading -> {
+                    // Already handled
+                }
             }
         }
     }

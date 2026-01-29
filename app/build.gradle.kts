@@ -106,6 +106,10 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth)
+
+    // Google Play Services Auth
+    implementation(libs.google.play.services.auth)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

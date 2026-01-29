@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.ehefin_mobile.MainActivity
 import com.example.ehefin_mobile.R
+import com.example.ehefin_mobile.feature.profile.domain.repository.ProfileRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,7 +29,7 @@ import javax.inject.Inject
 class EheFinMessagingService : FirebaseMessagingService() {
 
     @Inject
-    lateinit var profileRepository: com.example.ehefin_mobile.feature.profile.domain.repository.ProfileRepository
+    lateinit var profileRepository: ProfileRepository
 
     // Use IoDispatcher if possible, but for simplicity here using IO direct or injecting dispatcher
     // Since I can't easily change constructor to add dispatcher without factory,

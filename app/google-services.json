@@ -12,7 +12,20 @@
           "package_name": "com.example.ehefin_mobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "173366112230-hk5ei39100h6rq731qtburb8g43k66u4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ehefin_mobile",
+            "certificate_hash": "9fbf689d29cf65e98896775840ba969afd599a7b"
+          }
+        },
+        {
+          "client_id": "173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDYwR48ONYfPKZwd89hWKDrvRxhTGiJ0GE"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

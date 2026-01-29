@@ -21,6 +21,7 @@ object Constants {
         const val AUTH_LOGOUT = "auth/logout"
         const val AUTH_FORGOT_PASSWORD = "auth/forgot-password"
         const val AUTH_RESET_PASSWORD = "auth/reset-password"
+        const val AUTH_GOOGLE_LOGIN = "auth/google-login"
         
         // Customer
         const val CUSTOMER_PROFILE = "customer/profile"

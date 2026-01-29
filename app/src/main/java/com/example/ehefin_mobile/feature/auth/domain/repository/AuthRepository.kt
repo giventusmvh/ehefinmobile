@@ -47,4 +47,9 @@ interface AuthRepository {
      * Clear local session
      */
     suspend fun clearSession()
+
+    /**
+     * Login with Firebase ID token (Google Sign-In)
+     */
+    suspend fun loginWithFirebase(idToken: String, fcmToken: String? = null): Resource<AuthResult>
 }

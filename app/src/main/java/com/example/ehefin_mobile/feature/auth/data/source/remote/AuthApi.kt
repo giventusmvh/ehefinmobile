@@ -5,6 +5,7 @@ import com.example.ehefin_mobile.core.network.ApiResponse
 import com.example.ehefin_mobile.core.network.EmptyResponse
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.AuthResponseDto
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.ForgotPasswordRequest
+import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.FirebaseLoginRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.LoginRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.RegisterRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.ResetPasswordRequest
@@ -39,4 +40,9 @@ interface AuthApi {
     suspend fun resetPassword(
         @Body request: ResetPasswordRequest
     ): Response<EmptyResponse>
+
+    @POST(Endpoints.AUTH_GOOGLE_LOGIN)
+    suspend fun firebaseLogin(
+        @Body request: FirebaseLoginRequest
+    ): Response<ApiResponse<AuthResponseDto>>
 }

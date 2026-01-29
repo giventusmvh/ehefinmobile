@@ -48,3 +48,14 @@ data class ResetPasswordRequest(
     @SerializedName("confirmPassword")
     val confirmPassword: String
 )
+
+/**
+ * Request body for Firebase Google login
+ */
+data class FirebaseLoginRequest(
+    @SerializedName("idToken")
+    val idToken: String,
+    
+    @SerializedName("fcmToken")
+    val fcmToken: String? = null
+)

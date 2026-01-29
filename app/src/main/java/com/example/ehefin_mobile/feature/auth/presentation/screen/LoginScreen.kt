@@ -1,5 +1,8 @@
 package com.example.ehefin_mobile.feature.auth.presentation.screen
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,42 +16,62 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.feature.auth.presentation.components.GoogleSignInButton
+import com.example.ehefin_mobile.feature.auth.presentation.components.OrDivider
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.collectLatest
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
+import kotlinx.coroutines.tasks.await
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import android.util.Log
 
 @Composable
 fun LoginScreen(
-        onLoginSuccess: () -> Unit,
-        onNavigateToRegister: () -> Unit,
-        onNavigateToForgotPassword: () -> Unit,
-        viewModel: AuthViewModel = hiltViewModel()
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     // Handle events
     LaunchedEffect(Unit) {
@@ -69,22 +92,77 @@ fun LoginScreen(
         }
     }
 
+    // Google Sign-In launcher
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+
+                if (idToken != null) {
+                    // Authenticate with Firebase
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    FirebaseAuth.getInstance().signInWithCredential(credential)
+                        .addOnSuccessListener { authResult ->
+                            // Get Firebase ID Token
+                            authResult.user?.getIdToken(false)
+                                ?.addOnSuccessListener { tokenResult ->
+                                    val firebaseToken = tokenResult.token
+                                    if (firebaseToken != null) {
+                                        viewModel.loginWithFirebase(firebaseToken)
+                                    } else {
+                                        viewModel.clearError()
+                                    }
+                                }
+                                ?.addOnFailureListener { e ->
+                                    Log.e("FirebaseAuth", "Failed to get ID token", e)
+                                }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FirebaseAuth", "Firebase auth failed", e)
+                        }
+                }
+            } catch (e: ApiException) {
+                Log.e("GoogleSignIn", "Sign-in failed", e)
+            }
+        }
+    }
+
+    // Google Sign-In function
+    fun signInWithGoogle() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(com.example.ehefin_mobile.feature.auth.util.GoogleSignInHelper.DEFAULT_WEB_CLIENT_ID)
+            .requestEmail()
+            .build()
+
+        val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+        // Sign out first to force account picker to show every time
+        googleSignInClient.signOut().addOnCompleteListener {
+            val signInIntent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
+        }
+    }
+
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             Column(
-                    modifier =
-                            Modifier.fillMaxSize()
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                modifier =
+                Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 Spacer(modifier = Modifier.height(48.dp))
 
                 // Logo placeholder - can be replaced with actual logo
                 Box(
-                        modifier = Modifier.size(140.dp).padding(16.dp),
-                        contentAlignment = Alignment.Center
+                    modifier = Modifier.size(140.dp).padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "EheFin",
@@ -98,77 +176,91 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                        text = "Selamat Datang!",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground
+                    text = "Selamat Datang!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Text(
-                        text = "Masuk ke akun Anda untuk melanjutkan",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
+                    text = "Masuk ke akun Anda untuk melanjutkan",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Google Sign-In Button
+                GoogleSignInButton(
+                    onClick = { signInWithGoogle() },
+                    isLoading = uiState.isLoading,
+                    enabled = !uiState.isLoading
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Divider
+                OrDivider()
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Email field
-                androidx.compose.material3.OutlinedTextField(
-                        value = uiState.loginEmail,
-                        onValueChange = viewModel::onLoginEmailChange,
-                        label = { Text("Email") },
-                        placeholder = { Text("contoh@email.com") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions =
-                                androidx.compose.foundation.text.KeyboardOptions(
-                                        keyboardType = KeyboardType.Email,
-                                        imeAction = ImeAction.Next
-                                ),
-                        leadingIcon = {
-                            Icon(
-                                    imageVector = Icons.Default.Email,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                OutlinedTextField(
+                    value = uiState.loginEmail,
+                    onValueChange = viewModel::onLoginEmailChange,
+                    label = { Text("Email") },
+                    placeholder = { Text("contoh@email.com") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions =
+                    androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Password field
-                var passwordVisible by remember { androidx.compose.runtime.mutableStateOf(false) }
-                androidx.compose.material3.OutlinedTextField(
-                        value = uiState.loginPassword,
-                        onValueChange = viewModel::onLoginPasswordChange,
-                        label = { Text("Password") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
-                            onDone = { viewModel.login() }
-                        ),
-                        trailingIcon = {
-                            androidx.compose.material3.IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    imageVector = if (passwordVisible) androidx.compose.material.icons.Icons.Filled.Visibility else androidx.compose.material.icons.Icons.Filled.VisibilityOff,
-                                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                                )
-                            }
+                var passwordVisible by remember { mutableStateOf(false) }
+                OutlinedTextField(
+                    value = uiState.loginPassword,
+                    onValueChange = viewModel::onLoginPasswordChange,
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                        onDone = { viewModel.login() }
+                    ),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                            )
                         }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Forgot password
                 Box(modifier = Modifier.fillMaxWidth()) {
-                    androidx.compose.material3.TextButton(
-                            onClick = onNavigateToForgotPassword,
-                            modifier = Modifier.align(Alignment.CenterEnd)
+                    TextButton(
+                        onClick = onNavigateToForgotPassword,
+                        modifier = Modifier.align(Alignment.CenterEnd)
                     ) {
                         Text("Lupa Password?")
                     }
@@ -177,14 +269,14 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Login button
-                androidx.compose.material3.Button(
-                        onClick = viewModel::login,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        enabled = !uiState.isLoading && uiState.loginEmail.isNotBlank() && uiState.loginPassword.isNotBlank()
+                Button(
+                    onClick = viewModel::login,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    enabled = !uiState.isLoading && uiState.loginEmail.isNotBlank() && uiState.loginPassword.isNotBlank()
                 ) {
                     if (uiState.isLoading) {
-                        androidx.compose.material3.CircularProgressIndicator(
-                            color = androidx.compose.ui.graphics.Color.White,
+                        CircularProgressIndicator(
+                            color = Color.White,
                             modifier = Modifier.size(24.dp)
                         )
                     } else {
@@ -197,11 +289,11 @@ fun LoginScreen(
                 // Register link
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                            text = "Belum punya akun?",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Belum punya akun?",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    androidx.compose.material3.TextButton(onClick = onNavigateToRegister) {
+                    TextButton(onClick = onNavigateToRegister) {
                         Text("Daftar Sekarang")
                     }
                 }
