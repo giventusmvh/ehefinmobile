@@ -27,6 +27,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -80,18 +81,27 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-
-                    IconButton(onClick = { 
-                        if (isLoggedIn) {
-                            authViewModel.logout()
-                        } else {
-                            onLogout() // Acts as navigate to login
+                    TextButton(
+                        onClick = {
+                            if (isLoggedIn) {
+                                authViewModel.logout()
+                            } else {
+                                onLogout() // Acts as navigate to login
+                            }
                         }
-                    }) {
-                        Icon(
-                            imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
-                            contentDescription = if (isLoggedIn) "Logout" else "Login"
-                        )
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
+                                contentDescription = if (isLoggedIn) "Logout" else "Login",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = if (isLoggedIn) "Keluar" else "Masuk",
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
                     }
                 }
             )
