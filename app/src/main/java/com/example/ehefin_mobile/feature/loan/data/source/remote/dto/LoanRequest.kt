@@ -16,5 +16,11 @@ data class LoanRequestDto(
     val tenor: Int,
     
     @SerializedName("interestRate")
-    val interestRate: Double
+    val interestRate: Double,
+
+    @SerializedName("latitude")
+    val latitude: String? = null,
+
+    @SerializedName("longitude")
+    val longitude: String? = null
 )

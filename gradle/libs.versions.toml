@@ -110,6 +110,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 
 # Kotlin Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.0.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

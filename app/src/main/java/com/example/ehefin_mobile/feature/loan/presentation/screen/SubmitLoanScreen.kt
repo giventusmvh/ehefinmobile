@@ -56,7 +56,29 @@ fun SubmitLoanScreen(
 
     LaunchedEffect(Unit) { viewModel.resetSubmitForm() }
 
+
+
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineLocationGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseLocationGranted = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        
+        if (fineLocationGranted || coarseLocationGranted) {
+            viewModel.fetchLocation()
+        } else {
+             // Handle permission denied if needed, or just proceed without location
+             // For now we do nothing, user can still submit but without location
+        }
+    }
+
     LaunchedEffect(Unit) {
+        permissionLauncher.launch(
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
         viewModel.events.collectLatest { event ->
             when (event) {
                 is LoanEvent.LoanSubmitted -> {

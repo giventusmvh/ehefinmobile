@@ -16,7 +16,9 @@ class SubmitLoanUseCase @Inject constructor(
         branchId: Long,
         amount: Double,
         tenor: Int,
-        interestRate: Double
+        interestRate: Double,
+        latitude: String? = null,
+        longitude: String? = null
     ): Resource<LoanApplication> {
         // Validation
         if (branchId <= 0) {
@@ -36,7 +38,9 @@ class SubmitLoanUseCase @Inject constructor(
             branchId = branchId,
             amount = amount,
             tenor = tenor,
-            interestRate = interestRate
+            interestRate = interestRate,
+            latitude = latitude,
+            longitude = longitude
         )
         
         return loanRepository.submitLoan(request)

@@ -53,7 +53,10 @@ data class SubmitLoanUiState(
     val selectedBranchId: Long? = null,
     val amount: String = "",
     val tenor: String = "",
+
     val interestRate: String = "",
+    val latitude: String? = null,
+    val longitude: String? = null,
     val error: String? = null
 )
 
@@ -73,8 +76,11 @@ class LoanViewModel @Inject constructor(
     private val getLoanHistoryUseCase: GetLoanHistoryUseCase,
     private val submitLoanUseCase: SubmitLoanUseCase,
     private val getBranchesUseCase: GetBranchesUseCase,
-    private val tokenManager: TokenManager
+
+    private val tokenManager: TokenManager,
+    private val locationHelper: com.example.ehefin_mobile.core.util.LocationHelper
 ) : ViewModel() {
+
     
     // Loan List State
     private val _listState = MutableStateFlow(LoanListUiState())
@@ -273,11 +279,25 @@ class LoanViewModel @Inject constructor(
         viewModelScope.launch {
             _submitState.update { it.copy(isLoading = true, error = null) }
             
+            // Fetch location immediately before submit
+            val location = locationHelper.getCurrentLocation()
+            
+            // Check if we got location
+            val finalLat = location?.latitude?.toString() ?: state.latitude
+            val finalLong = location?.longitude?.toString() ?: state.longitude
+            
+            if (finalLat == null || finalLong == null) {
+                _submitState.update { it.copy(isLoading = false, error = "Gagal mengambil lokasi. Pastikan GPS/Lokasi aktif dan izin lokasi sudah diberikan.") }
+                return@launch
+            }
+
             when (val result = submitLoanUseCase(
                 branchId = state.selectedBranchId,
                 amount = amount,
                 tenor = tenor,
-                interestRate = rate
+                interestRate = rate,
+                latitude = finalLat,
+                longitude = finalLong
             )) {
                 is Resource.Success -> {
                     _submitState.update { SubmitLoanUiState() } // Reset form
@@ -294,6 +314,20 @@ class LoanViewModel @Inject constructor(
         }
     }
     
+    fun fetchLocation() {
+        viewModelScope.launch {
+            val location = locationHelper.getCurrentLocation()
+            if (location != null) {
+                _submitState.update { 
+                    it.copy(
+                        latitude = location.latitude.toString(),
+                        longitude = location.longitude.toString()
+                    ) 
+                }
+            }
+        }
+    }
+
     fun resetSubmitForm() {
         _submitState.update { SubmitLoanUiState() }
         loadBranches()

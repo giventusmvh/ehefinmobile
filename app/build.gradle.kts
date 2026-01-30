@@ -110,6 +110,7 @@ dependencies {
 
     // Google Play Services Auth
     implementation(libs.google.play.services.auth)
+    implementation(libs.play.services.location)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

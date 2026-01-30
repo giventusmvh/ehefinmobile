@@ -169,7 +169,9 @@ class LoanRepositoryImpl @Inject constructor(
             branchId = request.branchId,
             amount = request.amount,
             tenor = request.tenor,
-            interestRate = request.interestRate
+            interestRate = request.interestRate,
+            latitude = request.latitude,
+            longitude = request.longitude
         )
 
         if (!networkMonitor.isOnline()) {

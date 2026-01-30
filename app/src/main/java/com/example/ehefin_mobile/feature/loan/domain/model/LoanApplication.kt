@@ -53,5 +53,7 @@ data class SubmitLoanRequest(
     val branchId: Long,
     val amount: Double,
     val tenor: Int,
-    val interestRate: Double
+    val interestRate: Double,
+    val latitude: String? = null,
+    val longitude: String? = null
 )
