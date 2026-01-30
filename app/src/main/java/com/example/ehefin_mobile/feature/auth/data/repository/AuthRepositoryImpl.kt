@@ -3,8 +3,10 @@ package com.example.ehefin_mobile.feature.auth.data.repository
 import com.example.ehefin_mobile.core.common.Resource
 import com.example.ehefin_mobile.core.datastore.TokenManager
 import com.example.ehefin_mobile.core.database.DatabaseCleaner
+import com.example.ehefin_mobile.core.network.ApiResponse
 import com.example.ehefin_mobile.feature.auth.data.mapper.toDomain
 import com.example.ehefin_mobile.feature.auth.data.source.remote.AuthApi
+import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.AuthResponseDto
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.ForgotPasswordRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.FirebaseLoginRequest
 import com.example.ehefin_mobile.feature.auth.data.source.remote.dto.LoginRequest
@@ -127,7 +129,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     private suspend fun handleAuthResponse(
-        response: Response<com.example.ehefin_mobile.core.network.ApiResponse<com.example.ehefin_mobile.feature.auth.data.source.remote.dto.AuthResponseDto>>
+        response: Response<ApiResponse<AuthResponseDto>>
     ): Resource<AuthResult> {
         return if (response.isSuccessful && response.body()?.success == true) {
             val authData = response.body()!!.data!!

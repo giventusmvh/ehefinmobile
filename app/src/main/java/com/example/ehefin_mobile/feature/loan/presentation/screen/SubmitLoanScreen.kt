@@ -1,5 +1,6 @@
 package com.example.ehefin_mobile.feature.loan.presentation.screen
 
+import android.Manifest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ehefin_mobile.feature.loan.presentation.viewmodel.LoanEvent
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import com.example.ehefin_mobile.feature.loan.presentation.viewmodel.LoanViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -61,8 +64,8 @@ fun SubmitLoanScreen(
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val fineLocationGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        val coarseLocationGranted = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
         
         if (fineLocationGranted || coarseLocationGranted) {
             viewModel.fetchLocation()
@@ -75,8 +78,8 @@ fun SubmitLoanScreen(
     LaunchedEffect(Unit) {
         permissionLauncher.launch(
             arrayOf(
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
             )
         )
         viewModel.events.collectLatest { event ->
@@ -227,7 +230,7 @@ fun SubmitLoanScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Submit Button
-            androidx.compose.material3.Button(
+            Button(
                     onClick = viewModel::submitLoan,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     enabled = !state.isLoading &&
@@ -237,7 +240,7 @@ fun SubmitLoanScreen(
                             state.interestRate.isNotBlank()
             ) {
                 if (state.isLoading) {
-                    androidx.compose.material3.CircularProgressIndicator(
+                    CircularProgressIndicator(
                         color = androidx.compose.ui.graphics.Color.White,
                         modifier = Modifier.size(24.dp)
                     )

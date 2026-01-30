@@ -31,6 +31,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.NetworkType
 import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
 import javax.inject.Inject
 
 /**
@@ -197,7 +198,7 @@ class LoanRepositoryImpl @Inject constructor(
                 // but APPEND so they run in sequence if multiple exist
                 workManager.enqueueUniqueWork(
                     SyncWorker.WORK_NAME,
-                    androidx.work.ExistingWorkPolicy.APPEND_OR_REPLACE,
+                    ExistingWorkPolicy.APPEND_OR_REPLACE,
                     syncWork
                 )
                 

@@ -41,6 +41,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 
@@ -116,7 +118,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Name field
-            androidx.compose.material3.OutlinedTextField(
+            OutlinedTextField(
                     value = uiState.registerName,
                     onValueChange = viewModel::onRegisterNameChange,
                     label = { Text("Nama Lengkap") },
@@ -139,7 +141,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Email field
-            androidx.compose.material3.OutlinedTextField(
+            OutlinedTextField(
                     value = uiState.registerEmail,
                     onValueChange = viewModel::onRegisterEmailChange,
                     label = { Text("Email") },
@@ -163,7 +165,7 @@ fun RegisterScreen(
 
             // Password field
             var passwordVisible by remember { androidx.compose.runtime.mutableStateOf(false) }
-            androidx.compose.material3.OutlinedTextField(
+            OutlinedTextField(
                     value = uiState.registerPassword,
                     onValueChange = viewModel::onRegisterPasswordChange,
                     label = { Text("Password") },
@@ -188,7 +190,7 @@ fun RegisterScreen(
 
             // Confirm Password field
             var confirmPasswordVisible by remember { androidx.compose.runtime.mutableStateOf(false) }
-            androidx.compose.material3.OutlinedTextField(
+            OutlinedTextField(
                     value = uiState.registerConfirmPassword,
                     onValueChange = viewModel::onRegisterConfirmPasswordChange,
                     label = { Text("Konfirmasi Password") },
@@ -215,7 +217,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Register button
-            androidx.compose.material3.Button(
+            Button(
                     onClick = viewModel::register,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     enabled = !uiState.isLoading &&

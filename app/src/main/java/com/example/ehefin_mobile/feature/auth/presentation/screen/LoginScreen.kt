@@ -61,6 +61,8 @@ import kotlinx.coroutines.tasks.await
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.compose.foundation.text.KeyboardOptions
+import com.example.ehefin_mobile.feature.auth.util.GoogleSignInHelper
 
 @Composable
 fun LoginScreen(
@@ -134,7 +136,7 @@ fun LoginScreen(
     // Google Sign-In function
     fun signInWithGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(com.example.ehefin_mobile.feature.auth.util.GoogleSignInHelper.DEFAULT_WEB_CLIENT_ID)
+            .requestIdToken(GoogleSignInHelper.DEFAULT_WEB_CLIENT_ID)
             .requestEmail()
             .build()
 
@@ -237,7 +239,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),

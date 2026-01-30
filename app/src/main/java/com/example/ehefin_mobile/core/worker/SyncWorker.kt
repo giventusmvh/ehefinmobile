@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 import android.util.Log
+import com.example.ehefin_mobile.core.database.entity.PendingRequestEntity
 
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
@@ -62,7 +63,7 @@ class SyncWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun processRequest(request: com.example.ehefin_mobile.core.database.entity.PendingRequestEntity): Boolean {
+    private suspend fun processRequest(request: PendingRequestEntity): Boolean {
         return when (request.type) {
             "SUBMIT_LOAN" -> {
                 val loanRequest = gson.fromJson(request.data, LoanRequestDto::class.java)
