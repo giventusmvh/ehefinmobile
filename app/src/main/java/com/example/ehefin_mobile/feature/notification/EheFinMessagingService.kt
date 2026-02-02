@@ -8,9 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.ehefin_mobile.MainActivity
 import com.example.ehefin_mobile.R
+import com.example.ehefin_mobile.feature.loan.domain.repository.LoanRepository
 import com.example.ehefin_mobile.feature.profile.domain.repository.ProfileRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -30,6 +32,12 @@ class EheFinMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var profileRepository: ProfileRepository
+
+    @Inject
+    lateinit var loanRepository: LoanRepository
+
+    @Inject
+    lateinit var plafondRepository: com.example.ehefin_mobile.feature.plafond.domain.repository.PlafondRepository
 
     // Use IoDispatcher if possible, but for simplicity here using IO direct or injecting dispatcher
     // Since I can't easily change constructor to add dispatcher without factory,
@@ -65,9 +73,9 @@ class EheFinMessagingService : FirebaseMessagingService() {
         serviceScope.launch {
             try {
                 profileRepository.registerFcmToken(token)
-                android.util.Log.d("FCM", "Token sent to backend: $token")
+                Log.d("FCM", "Token sent to backend: $token")
             } catch (e: Exception) {
-                android.util.Log.e("FCM", "Failed to send token", e)
+                Log.e("FCM", "Failed to send token", e)
             }
         }
     }
@@ -85,12 +93,49 @@ class EheFinMessagingService : FirebaseMessagingService() {
         val body = data["body"] ?: message.notification?.body ?: ""
         val loanId = data["loanId"]
 
+        // Trigger data refresh based on notification type
+        if (loanId != null) {
+            refreshLoanData(loanId.toLongOrNull())
+        } else {
+            // General refresh if loan ID not specified but it's a loan update
+            if (notificationType.contains("LOAN")) {
+                refreshLoanData(null)
+            }
+        }
+
         showNotification(
             title = title,
             message = body,
             notificationType = notificationType,
             loanId = loanId
         )
+    }
+
+    private fun refreshLoanData(loanId: Long?) {
+        serviceScope.launch {
+            try {
+                // Refresh list (which also updates the loan detail in cache)
+                loanRepository.refreshLoans()
+
+                // Refresh plafond as loan changes might affect available limit
+                try {
+                    plafondRepository.refreshPlafond()
+                } catch (e: Exception) {
+                    Log.e("FCM", "Error refreshing plafond", e)
+                }
+                
+                // Refresh specific history if ID available
+                if (loanId != null) {
+                    try {
+                        loanRepository.refreshLoanHistory(loanId)
+                    } catch (e: Exception) {
+                        Log.e("FCM", "Error refreshing specific loan history", e)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("FCM", "Error refreshing loan data", e)
+            }
+        }
     }
 
     private fun showNotification(

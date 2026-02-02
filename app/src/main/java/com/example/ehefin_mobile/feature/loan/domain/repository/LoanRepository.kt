@@ -40,6 +40,11 @@ interface LoanRepository {
     suspend fun refreshLoans(): Resource<Unit>
     
     /**
+     * Refresh loan history from remote
+     */
+    suspend fun refreshLoanHistory(loanId: Long): Resource<Unit>
+    
+    /**
      * Clear local cache
      */
     suspend fun clearCache()

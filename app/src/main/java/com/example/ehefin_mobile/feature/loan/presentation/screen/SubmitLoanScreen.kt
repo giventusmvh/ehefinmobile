@@ -215,7 +215,8 @@ fun SubmitLoanScreen(
                 Box(modifier = Modifier.weight(1f)) {
                     androidx.compose.material3.OutlinedTextField(
                             value = state.interestRate,
-                            onValueChange = viewModel::onInterestRateChange,
+                            onValueChange = { }, // Read-only
+                            readOnly = true,
                             label = { Text("Bunga (%)") },
                             placeholder = { Text("Contoh: 5.5") },
                             modifier = Modifier.fillMaxWidth(),

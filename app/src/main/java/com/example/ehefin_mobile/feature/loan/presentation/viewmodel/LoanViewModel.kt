@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.ehefin_mobile.feature.plafond.domain.usecase.GetPlafondUseCase
 import javax.inject.Inject
 
 /**
@@ -69,6 +70,7 @@ sealed class LoanEvent {
     data class NavigateToDetail(val loanId: Long) : LoanEvent()
 }
 
+
 @HiltViewModel
 class LoanViewModel @Inject constructor(
     private val getLoansUseCase: GetLoansUseCase,
@@ -76,6 +78,7 @@ class LoanViewModel @Inject constructor(
     private val getLoanHistoryUseCase: GetLoanHistoryUseCase,
     private val submitLoanUseCase: SubmitLoanUseCase,
     private val getBranchesUseCase: GetBranchesUseCase,
+    private val getPlafondUseCase: GetPlafondUseCase,
 
     private val tokenManager: TokenManager,
     private val locationHelper: com.example.ehefin_mobile.core.util.LocationHelper
@@ -224,6 +227,22 @@ class LoanViewModel @Inject constructor(
             }
         }
     }
+
+    private fun loadActivePlafond() {
+        viewModelScope.launch {
+            getPlafondUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    result.data?.let { plafond ->
+                        _submitState.update { 
+                            it.copy(
+                                interestRate = plafond.interestRate.toString()
+                            ) 
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     // Submit loan form updates
     fun onBranchSelected(branchId: Long) {
@@ -331,5 +350,6 @@ class LoanViewModel @Inject constructor(
     fun resetSubmitForm() {
         _submitState.update { SubmitLoanUiState() }
         loadBranches()
+        loadActivePlafond()
     }
 }

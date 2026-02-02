@@ -18,6 +18,7 @@ import com.example.ehefin_mobile.feature.loan.domain.repository.LoanRepository
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -32,22 +33,13 @@ import androidx.work.WorkManager
 import androidx.work.NetworkType
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * Offline-First Repository Implementation for Loans
  * 
- * Pattern:
- * 1. Emit Loading state
- * 2. Emit cached data from Room (if available)
- * 3. Fetch fresh data from API
- * 4. Update Room cache
- * 5. Emit updated data
- * 
- * Benefits:
- * - Instant UI response from cache
- * - Always fresh data when online
- * - Works offline with cached data
+ * Pattern: Observable Source of Truth (Room) + Network Sync
  */
 class LoanRepositoryImpl @Inject constructor(
     private val loanApi: LoanApi,
@@ -61,103 +53,61 @@ class LoanRepositoryImpl @Inject constructor(
 ) : LoanRepository {
     
     /**
-     * Get all loans with offline-first pattern
+     * Get all loans with observable pattern
      */
     override fun getLoans(): Flow<Resource<List<LoanItem>>> = flow {
         emit(Resource.Loading())
         
-        // 1. Emit cached data first (for instant UI)
-        val cachedLoans = loanDao.getAllLoans().first()
-        if (cachedLoans.isNotEmpty()) {
-            emit(Resource.Success(cachedLoans.map { it.toLoanItem() }))
-        }
-        
-        // 2. Fetch from network if online
-        if (networkMonitor.isOnline()) {
-            try {
-                val response = loanApi.getLoans()
-                
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val loanDtos = response.body()!!.data ?: emptyList()
-                    val entities = loanDtos.map { it.toEntity() }
-                    
-                    // 3. Update cache atomically
-                    loanDao.deleteAllAndInsert(entities)
-                    
-                    // 4. Emit fresh data
-                    emit(Resource.Success(entities.map { it.toLoanItem() }))
-                } else {
-                    // API error but we have cache
-                    val errorMsg = parseErrorMessage(response)
-                    if (cachedLoans.isNotEmpty()) {
-                        emit(Resource.Error(errorMsg, cachedLoans.map { it.toLoanItem() }))
-                    } else {
-                        emit(Resource.Error(errorMsg))
+        coroutineScope {
+            // 1. Trigger network refresh in background
+            launch {
+                if (networkMonitor.isOnline()) {
+                    try {
+                        refreshLoans()
+                    } catch (e: Exception) {
+                        // Ignore errors here, UI will show cached data
+                         // Optionally emit a temporary error via a side channel if needed
                     }
                 }
-            } catch (e: Exception) {
-                // Network error but we have cache
-                val errorMsg = "Tidak dapat terhubung ke server: ${e.localizedMessage}"
-                if (cachedLoans.isNotEmpty()) {
-                    emit(Resource.Error(errorMsg, cachedLoans.map { it.toLoanItem() }))
-                } else {
-                    emit(Resource.Error(errorMsg))
-                }
             }
-        } else {
-            // Offline mode
-            if (cachedLoans.isEmpty()) {
-                emit(Resource.Error("Tidak ada koneksi internet dan tidak ada data tersimpan"))
+            
+            // 2. Observe Database (Source of Truth)
+            // This will run indefinitely until the flow is cancelled
+            loanDao.getAllLoans().collect { entities ->
+                emit(Resource.Success(entities.map { it.toLoanItem() }))
             }
-            // If we already emitted cached data, just stay with that
         }
     }.flowOn(ioDispatcher)
     
     /**
-     * Get loan detail by ID with offline-first pattern
+     * Get loan detail by ID with observable pattern
      */
     override fun getLoanById(id: Long): Flow<Resource<LoanApplication>> = flow {
         emit(Resource.Loading())
         
-        // 1. Emit cached data first
-        val cachedLoan = loanDao.getLoanByIdSync(id)
-        if (cachedLoan != null) {
-            emit(Resource.Success(cachedLoan.toDomain()))
-        }
-        
-        // 2. Fetch from network
-        if (networkMonitor.isOnline()) {
-            try {
-                val response = loanApi.getLoanById(id)
-                
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val loanDto = response.body()!!.data!!
-                    val entity = loanDto.toEntity()
-                    
-                    // 3. Update cache
-                    loanDao.insertLoan(entity)
-                    
-                    // 4. Emit fresh data
-                    emit(Resource.Success(entity.toDomain()))
-                } else {
-                    val errorMsg = parseErrorMessage(response)
-                    if (cachedLoan != null) {
-                        emit(Resource.Error(errorMsg, cachedLoan.toDomain()))
-                    } else {
-                        emit(Resource.Error(errorMsg))
+        coroutineScope {
+            // 1. Trigger network refresh
+            launch {
+                if (networkMonitor.isOnline()) {
+                    try {
+                        val response = loanApi.getLoanById(id)
+                        if (response.isSuccessful && response.body()?.success == true) {
+                            val loanDto = response.body()!!.data!!
+                            loanDao.insertLoan(loanDto.toEntity())
+                        }
+                    } catch (e: Exception) {
+                        // Ignore
                     }
                 }
-            } catch (e: Exception) {
-                val errorMsg = "Tidak dapat terhubung ke server"
-                if (cachedLoan != null) {
-                    emit(Resource.Error(errorMsg, cachedLoan.toDomain()))
-                } else {
-                    emit(Resource.Error(errorMsg))
-                }
             }
-        } else {
-            if (cachedLoan == null) {
-                emit(Resource.Error("Tidak ada koneksi internet dan data tidak tersedia"))
+            
+            // 2. Observe Database
+            loanDao.getLoanById(id).collect { entity ->
+                if (entity != null) {
+                    emit(Resource.Success(entity.toDomain()))
+                } else {
+                    emit(Resource.Error("Data tidak ditemukan"))
+                }
             }
         }
     }.flowOn(ioDispatcher)
@@ -258,50 +208,31 @@ class LoanRepositoryImpl @Inject constructor(
     }
     
     /**
-     * Get loan history with offline-first pattern
+     * Get loan history with observable pattern
      */
     override fun getLoanHistory(loanId: Long): Flow<Resource<List<LoanHistory>>> = flow {
         emit(Resource.Loading())
         
-        // 1. Emit cached history first
-        val cachedHistory = loanHistoryDao.getHistoryByLoanId(loanId).first()
-        if (cachedHistory.isNotEmpty()) {
-            emit(Resource.Success(cachedHistory.map { it.toDomain() }))
-        }
-        
-        // 2. Fetch from network
-        if (networkMonitor.isOnline()) {
-            try {
-                val response = loanApi.getLoanHistory(loanId)
-                
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val historyDtos = response.body()!!.data ?: emptyList()
-                    val entities = historyDtos.map { it.toEntity(loanId) }
-                    
-                    // 3. Update cache
-                    loanHistoryDao.replaceHistoryForLoan(loanId, entities)
-                    
-                    // 4. Emit fresh data
-                    emit(Resource.Success(entities.map { it.toDomain() }))
-                } else {
-                    val errorMsg = parseErrorMessage(response)
-                    if (cachedHistory.isNotEmpty()) {
-                        emit(Resource.Error(errorMsg, cachedHistory.map { it.toDomain() }))
-                    } else {
-                        emit(Resource.Error(errorMsg))
+        coroutineScope {
+            // 1. Trigger network refresh
+            launch {
+                if (networkMonitor.isOnline()) {
+                    try {
+                        val response = loanApi.getLoanHistory(loanId)
+                        if (response.isSuccessful && response.body()?.success == true) {
+                            val historyDtos = response.body()!!.data ?: emptyList()
+                            val entities = historyDtos.map { it.toEntity(loanId) }
+                            loanHistoryDao.replaceHistoryForLoan(loanId, entities)
+                        }
+                    } catch (e: Exception) {
+                        // Ignore
                     }
                 }
-            } catch (e: Exception) {
-                val errorMsg = "Tidak dapat terhubung ke server"
-                if (cachedHistory.isNotEmpty()) {
-                    emit(Resource.Error(errorMsg, cachedHistory.map { it.toDomain() }))
-                } else {
-                    emit(Resource.Error(errorMsg))
-                }
             }
-        } else {
-            if (cachedHistory.isEmpty()) {
-                emit(Resource.Error("Tidak ada koneksi internet dan tidak ada history tersimpan"))
+            
+            // 2. Observe Database
+            loanHistoryDao.getHistoryByLoanId(loanId).collect { entities ->
+                emit(Resource.Success(entities.map { it.toDomain() }))
             }
         }
     }.flowOn(ioDispatcher)
@@ -327,6 +258,27 @@ class LoanRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Resource.Error("Gagal memperbarui data: ${e.localizedMessage}")
+        }
+    }
+    
+    override suspend fun refreshLoanHistory(loanId: Long): Resource<Unit> {
+         if (!networkMonitor.isOnline()) {
+            return Resource.Error("Tidak ada koneksi internet")
+        }
+        
+        return try {
+            val response = loanApi.getLoanHistory(loanId)
+            
+            if (response.isSuccessful && response.body()?.success == true) {
+                val historyDtos = response.body()!!.data ?: emptyList()
+                val entities = historyDtos.map { it.toEntity(loanId) }
+                loanHistoryDao.replaceHistoryForLoan(loanId, entities)
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(parseErrorMessage(response))
+            }
+        } catch (e: Exception) {
+            Resource.Error("Gagal memperbarui history: ${e.localizedMessage}")
         }
     }
     

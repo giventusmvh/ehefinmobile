@@ -33,10 +33,10 @@ fun ProductResponseDto.toDomain(): Product {
 }
 
 // Plafond Mappers
-fun PlafondResponseDto.toEntity(): PlafondEntity {
+fun PlafondResponseDto.toEntity(userId: Long = 0L): PlafondEntity {
     return PlafondEntity(
             id = id,
-            userId = 0L, // API doesn't return userId, will be set from session if needed
+            userId = userId, // Use provided userId
             productId = product.id,
             productName = product.name,
             originalAmount = originalAmount,

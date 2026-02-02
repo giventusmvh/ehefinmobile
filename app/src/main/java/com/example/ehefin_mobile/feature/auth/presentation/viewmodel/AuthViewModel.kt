@@ -10,8 +10,12 @@ import com.example.ehefin_mobile.feature.auth.domain.usecase.LoginUseCase
 import com.example.ehefin_mobile.feature.auth.domain.usecase.LogoutUseCase
 import com.example.ehefin_mobile.feature.auth.domain.usecase.RegisterUseCase
 import com.example.ehefin_mobile.feature.profile.domain.usecase.RegisterFcmTokenUseCase
+import com.example.ehefin_mobile.feature.profile.domain.repository.ProfileRepository
+import com.example.ehefin_mobile.feature.loan.domain.repository.LoanRepository
+import com.example.ehefin_mobile.feature.plafond.domain.repository.PlafondRepository
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +23,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -61,7 +66,10 @@ class AuthViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val forgotPasswordUseCase: ForgotPasswordUseCase,
     private val firebaseLoginUseCase: FirebaseLoginUseCase,
-    private val registerFcmTokenUseCase: RegisterFcmTokenUseCase
+    private val registerFcmTokenUseCase: RegisterFcmTokenUseCase,
+    private val profileRepository: ProfileRepository,
+    private val loanRepository: LoanRepository,
+    private val plafondRepository: PlafondRepository
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -127,6 +135,42 @@ class AuthViewModel @Inject constructor(
             Log.e("FCM", "Failed to get FCM token", e)
         }
     }
+
+    /**
+     * Sync user data (Profile, Loans, Plafond) to local DB
+     */
+    private suspend fun syncUserData() {
+        // Use supervisorScope to ensure one failure doesn't cancel others
+        supervisorScope {
+            // Run in parallel
+            val profileJob = async { 
+                try {
+                    profileRepository.refreshProfile() 
+                } catch (e: Exception) {
+                    Log.e("AuthViewModel", "Failed to sync profile", e)
+                }
+            }
+            val loansJob = async { 
+                try {
+                    loanRepository.refreshLoans() 
+                } catch (e: Exception) {
+                    Log.e("AuthViewModel", "Failed to sync loans", e)
+                }
+            }
+            val plafondJob = async { 
+                try {
+                    plafondRepository.refreshPlafond() 
+                } catch (e: Exception) {
+                    Log.e("AuthViewModel", "Failed to sync plafond", e)
+                }
+            }
+            
+            // Wait for all to complete (or fail safely)
+            profileJob.await()
+            loansJob.await()
+            plafondJob.await()
+        }
+    }
     
     fun login() {
         viewModelScope.launch {
@@ -137,6 +181,14 @@ class AuthViewModel @Inject constructor(
                 password = _uiState.value.loginPassword
             )) {
                 is Resource.Success -> {
+                    // Start syncing data while still showing loading
+                    try {
+                        syncUserData()
+                    } catch (e: Exception) {
+                        Log.e("AuthViewModel", "Sync failed during login", e)
+                        // Continue anyway, don't block login
+                    }
+                    
                     _uiState.update { it.copy(isLoading = false) }
                     registerFcmToken() // Register FCM token after login
                     _events.emit(AuthEvent.LoginSuccess)
@@ -164,6 +216,13 @@ class AuthViewModel @Inject constructor(
                 confirmPassword = _uiState.value.registerConfirmPassword
             )) {
                 is Resource.Success -> {
+                    // Start syncing data while still showing loading
+                    try {
+                        syncUserData()
+                    } catch (e: Exception) {
+                        Log.e("AuthViewModel", "Sync failed during register", e)
+                    }
+
                     _uiState.update { it.copy(isLoading = false) }
                     registerFcmToken() // Register FCM token after registration
                     _events.emit(AuthEvent.RegisterSuccess)
@@ -237,6 +296,13 @@ class AuthViewModel @Inject constructor(
 
             when (val result = firebaseLoginUseCase(idToken, fcmToken)) {
                 is Resource.Success -> {
+                    // Start syncing data while still showing loading
+                    try {
+                        syncUserData()
+                    } catch (e: Exception) {
+                        Log.e("AuthViewModel", "Sync failed during firebase login", e)
+                    }
+
                     _uiState.update { it.copy(isLoading = false) }
                     _events.emit(AuthEvent.LoginSuccess)
                 }
