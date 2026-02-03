@@ -58,7 +58,8 @@ data class SubmitLoanUiState(
     val interestRate: String = "",
     val latitude: String? = null,
     val longitude: String? = null,
-    val error: String? = null
+    val error: String? = null,
+    val hasActivePlafond: Boolean? = null
 )
 
 /**
@@ -230,14 +231,27 @@ class LoanViewModel @Inject constructor(
 
     private fun loadActivePlafond() {
         viewModelScope.launch {
+            _submitState.update { it.copy(isLoading = true) }
             getPlafondUseCase().collect { result ->
-                if (result is Resource.Success) {
-                    result.data?.let { plafond ->
-                        _submitState.update { 
-                            it.copy(
-                                interestRate = plafond.interestRate.toString()
-                            ) 
+                _submitState.update { state ->
+                    when (result) {
+                        is Resource.Success -> {
+                            val plafond = result.data
+                            val isActive = plafond?.isActive == true
+                            state.copy(
+                                isLoading = false,
+                                hasActivePlafond = isActive,
+                                interestRate = if (isActive) plafond!!.interestRate.toString() else ""
+                            )
                         }
+                        is Resource.Error -> {
+                            state.copy(
+                                isLoading = false,
+                                hasActivePlafond = false, // Assume no active plafond on error for safety, or handle differently
+                                error = result.message
+                            )
+                        }
+                        is Resource.Loading -> state // Keep loading state
                     }
                 }
             }

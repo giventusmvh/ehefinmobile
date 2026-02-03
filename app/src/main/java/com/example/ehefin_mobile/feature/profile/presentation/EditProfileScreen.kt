@@ -24,7 +24,12 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -236,6 +241,35 @@ fun EditProfileScreen(
         }
     }
 
+    // Date Picker Dialog
+    val datePickerState = rememberDatePickerState()
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = Date(millis)
+                        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        birthdate = format.format(date)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Batal")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -266,13 +300,26 @@ fun EditProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = birthdate,
-                onValueChange = { birthdate = it },
-                label = { Text("Tanggal Lahir (YYYY-MM-DD)") },
-                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+            androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = birthdate,
+                    onValueChange = { },
+                    readOnly = true,
+                    label = { Text("Tanggal Lahir (YYYY-MM-DD)") },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Pilih Tanggal"
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { showDatePicker = true }
+                )
+            }
 
             OutlinedTextField(
                 value = phoneNumber,

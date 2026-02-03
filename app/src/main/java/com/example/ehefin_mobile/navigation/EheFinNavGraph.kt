@@ -145,6 +145,9 @@ fun EheFinNavGraph(
                         popUpTo(Screen.SubmitLoan.route) { inclusive = true }
                     }
                 },
+                onNavigateToPlafond = {
+                     navController.navigate(Screen.Plafond.route)
+                },
                 onNavigateBack = { navController.popBackStack() }
             )
         }
