@@ -93,11 +93,15 @@ fun EditProfileScreen(
     var accountNumber by remember { mutableStateOf("") }
     var accountHolderName by remember { mutableStateOf("") }
     var birthdate by remember { mutableStateOf("") } // YYYY-MM-DD format for simplicity
+    var job by remember { mutableStateOf("") }
+    var companyName by remember { mutableStateOf("") }
 
     // State for document files
     var ktpFile by remember { mutableStateOf<File?>(null) }
     var kkFile by remember { mutableStateOf<File?>(null) }
     var npwpFile by remember { mutableStateOf<File?>(null) }
+    var selfieFile by remember { mutableStateOf<File?>(null) }
+    var salarySlipFile by remember { mutableStateOf<File?>(null) }
 
     // Bottom sheet state
     val sheetState = rememberModalBottomSheetState()
@@ -113,6 +117,8 @@ fun EditProfileScreen(
             if (accountNumber.isEmpty()) accountNumber = it.accountNumber ?: ""
             if (accountHolderName.isEmpty()) accountHolderName = it.accountHolderName ?: ""
             if (birthdate.isEmpty()) birthdate = it.birthdate ?: ""
+            if (job.isEmpty()) job = it.job ?: ""
+            if (companyName.isEmpty()) companyName = it.companyName ?: ""
         }
     }
 
@@ -142,6 +148,8 @@ fun EditProfileScreen(
                         "KTP" -> ktpFile = file
                         "KK" -> kkFile = file
                         "NPWP" -> npwpFile = file
+                        "SELFIE" -> selfieFile = file
+                        "SALARY_SLIP" -> salarySlipFile = file
                     }
                 }
             }
@@ -159,6 +167,8 @@ fun EditProfileScreen(
                         "KTP" -> ktpFile = file
                         "KK" -> kkFile = file
                         "NPWP" -> npwpFile = file
+                        "SELFIE" -> selfieFile = file
+                        "SALARY_SLIP" -> salarySlipFile = file
                     }
                 }
             }
@@ -322,6 +332,20 @@ fun EditProfileScreen(
             }
 
             OutlinedTextField(
+                value = job,
+                onValueChange = { job = it },
+                label = { Text("Pekerjaan") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = companyName,
+                onValueChange = { companyName = it },
+                label = { Text("Nama Perusahaan") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
                 label = { Text("Nomor Telepon") },
@@ -393,6 +417,26 @@ fun EditProfileScreen(
                 onUpload = { showUploadOptions("NPWP") }
             )
 
+            DocumentUploadItem(
+                label = "Foto Selfie",
+                isUploaded = selfieFile != null || !uiState.profile?.selfiePath.isNullOrEmpty(),
+                isPending = selfieFile != null,
+                file = selfieFile,
+                imageUrl = uiState.profile?.selfiePath,
+                accessToken = uiState.accessToken,
+                onUpload = { showUploadOptions("SELFIE") }
+            )
+
+            DocumentUploadItem(
+                label = "Slip Gaji",
+                isUploaded = salarySlipFile != null || !uiState.profile?.salarySlipPath.isNullOrEmpty(),
+                isPending = salarySlipFile != null,
+                file = salarySlipFile,
+                imageUrl = uiState.profile?.salarySlipPath,
+                accessToken = uiState.accessToken,
+                onUpload = { showUploadOptions("SALARY_SLIP") }
+            )
+
             if (uiState.error != null) {
                 Text(
                     text = uiState.error!!,
@@ -414,9 +458,13 @@ fun EditProfileScreen(
                             accountNumber = accountNumber,
                             accountHolderName = accountHolderName,
                             birthdate = birthdate,
+                            job = job,
+                            companyName = companyName,
                             ktpFile = ktpFile,
                             kkFile = kkFile,
-                            npwpFile = npwpFile
+                            npwpFile = npwpFile,
+                            selfieFile = selfieFile,
+                            salarySlipFile = salarySlipFile
                         )
                     )
                 },

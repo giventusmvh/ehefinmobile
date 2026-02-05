@@ -20,9 +20,14 @@ interface ProfileRepository {
                 accountNumber: String,
                 accountHolderName: String,
                 birthdate: String,
+                job: String,
+                companyName: String,
                 ktpFile: File? = null,
                 kkFile: File? = null,
-                npwpFile: File? = null
+                npwpFile: File? = null,
+                selfieFile: File? = null,
+                salarySlipFile: File? = null,
+
         ): Resource<UserProfile>
 
         /** Register FCM Token */

@@ -22,6 +22,10 @@ data class ProfileEntity(
     val bankName: String?,
     val accountNumber: String?,
     val accountHolderName: String?,
+    val job: String? = null,
+    val companyName: String? = null,
+    val selfiePath: String? = null,
+    val salarySlipPath: String? = null,
     val isComplete: Boolean = false,
     val lastSyncedAt: Long = System.currentTimeMillis()
 )

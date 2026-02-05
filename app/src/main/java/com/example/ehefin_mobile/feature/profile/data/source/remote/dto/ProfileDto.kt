@@ -31,6 +31,10 @@ data class ProfileDataDto(
         @SerializedName("bankName") val bankName: String?,
         @SerializedName("accountNumber") val accountNumber: String?,
         @SerializedName("accountHolderName") val accountHolderName: String?,
+        @SerializedName("job") val job: String?,
+        @SerializedName("companyName") val companyName: String?,
+        @SerializedName("selfieUrl") val selfieUrl: String?,
+        @SerializedName("salarySlipUrl") val salarySlipUrl: String?,
         @SerializedName("isComplete") val isComplete: Boolean?
 )
 
@@ -41,7 +45,9 @@ data class UpdateProfileRequest(
         @SerializedName("bankName") val bankName: String,
         @SerializedName("accountNumber") val accountNumber: String,
         @SerializedName("accountHolderName") val accountHolderName: String,
-        @SerializedName("birthdate") val birthdate: String
+        @SerializedName("birthdate") val birthdate: String,
+        @SerializedName("job") val job: String,
+        @SerializedName("companyName") val companyName: String
 )
 
 /**
@@ -59,6 +65,10 @@ data class UpdateProfileResponseDto(
         @SerializedName("bankName") val bankName: String?,
         @SerializedName("accountNumber") val accountNumber: String?,
         @SerializedName("accountHolderName") val accountHolderName: String?,
+        @SerializedName("job") val job: String?,
+        @SerializedName("companyName") val companyName: String?,
+        @SerializedName("selfieUrl") val selfieUrl: String?,
+        @SerializedName("salarySlipUrl") val salarySlipUrl: String?,
         @SerializedName("isComplete") val isComplete: Boolean?
 )
 

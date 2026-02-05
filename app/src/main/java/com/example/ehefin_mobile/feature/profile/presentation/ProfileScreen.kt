@@ -68,6 +68,7 @@ fun ProfileScreen(
         viewModel.onEvent(ProfileEvent.Refresh)
     }
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -101,6 +102,7 @@ fun ProfileScreen(
                     uiState.profile?.let { profile ->
                         ProfileHeader(
                             profile = profile,
+                            accessToken = uiState.accessToken,
                             onEditClick = { navController.navigate(Screen.EditProfile.route) }
                         )
                     }
@@ -157,6 +159,8 @@ fun ProfileScreen(
                     ) {
                         ProfileInfoRow(label = "NIK", value = uiState.profile?.nik)
                         ProfileInfoRow(label = "Tanggal Lahir", value = uiState.profile?.birthdate)
+                        ProfileInfoRow(label = "Pekerjaan", value = uiState.profile?.job)
+                        ProfileInfoRow(label = "Perusahaan", value = uiState.profile?.companyName)
                         ProfileInfoRow(label = "No. Telepon", value = uiState.profile?.phoneNumber)
                         ProfileInfoRow(label = "Alamat", value = uiState.profile?.address)
                     }
@@ -195,6 +199,16 @@ fun ProfileScreen(
                             imageUrl = uiState.profile?.npwpPath,
                             accessToken = uiState.accessToken
                         )
+                        DocumentItem(
+                            label = "Foto Selfie",
+                            imageUrl = uiState.profile?.selfiePath,
+                            accessToken = uiState.accessToken
+                        )
+                        DocumentItem(
+                            label = "Slip Gaji",
+                            imageUrl = uiState.profile?.salarySlipPath,
+                            accessToken = uiState.accessToken
+                        )
                     }
                     
                     Spacer(modifier = Modifier.height(32.dp))
@@ -207,6 +221,7 @@ fun ProfileScreen(
 @Composable
 fun ProfileHeader(
     profile: UserProfile,
+    accessToken: String? = null,
     onEditClick: () -> Unit
 ) {
     Card(
@@ -229,11 +244,36 @@ fun ProfileHeader(
                     .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = profile.name.take(1).uppercase(),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                if (!profile.selfiePath.isNullOrEmpty()) {
+                    val context = LocalContext.current
+                    // Build request with auth header
+                    val model = remember(profile.selfiePath, accessToken) {
+                        if (accessToken != null) {
+                            ImageRequest.Builder(context)
+                                .data(profile.selfiePath)
+                                .addHeader("Authorization", "Bearer $accessToken")
+                                .crossfade(true)
+                                .build()
+                        } else {
+                            ImageRequest.Builder(context)
+                                .data(profile.selfiePath)
+                                .crossfade(true)
+                                .build()
+                        }
+                    }
+                    AsyncImage(
+                        model = model,
+                        contentDescription = "Profile Photo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
+                } else {
+                    Text(
+                        text = profile.name.take(1).uppercase(),
+                        style = MaterialTheme.typography.displayMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -381,15 +421,18 @@ fun DocumentItem(label: String, imageUrl: String?, accessToken: String?) {
 
             Card(
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth().height(160.dp)
+                modifier = Modifier.fillMaxWidth().height(160.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                  AsyncImage(
                     model = model,
                     contentDescription = "Preview $label",
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    error = androidx.compose.ui.graphics.vector.rememberVectorPainter(Icons.Default.Warning)
                 )
             }
+
         }
     }
 }

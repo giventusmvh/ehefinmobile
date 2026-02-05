@@ -25,7 +25,9 @@ interface ProfileApi {
                 @Part("data") data: RequestBody,
                 @Part ktp: MultipartBody.Part?,
                 @Part kk: MultipartBody.Part?,
-                @Part npwp: MultipartBody.Part?
+                @Part npwp: MultipartBody.Part?,
+                @Part selfie: MultipartBody.Part?,
+                @Part salarySlip: MultipartBody.Part?
         ): Response<ApiResponse<UpdateProfileResponseDto>>
 
         @POST("customer/fcm-token")

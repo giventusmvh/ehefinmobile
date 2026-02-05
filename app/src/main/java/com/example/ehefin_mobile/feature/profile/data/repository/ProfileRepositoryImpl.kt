@@ -97,9 +97,13 @@ constructor(
             accountNumber: String,
             accountHolderName: String,
             birthdate: String,
+            job: String,
+            companyName: String,
             ktpFile: File?,
             kkFile: File?,
-            npwpFile: File?
+            npwpFile: File?,
+            selfieFile: File?,
+            salarySlipFile: File?
     ): Resource<UserProfile> {
         if (!networkMonitor.isOnline()) {
             return Resource.Error("Tidak ada koneksi internet")
@@ -127,7 +131,10 @@ constructor(
                                     bankName = bankName,
                                     accountNumber = accountNumber,
                                     accountHolderName = accountHolderName,
-                                    birthdate = birthdate
+
+                                    birthdate = birthdate,
+                                    job = job,
+                                    companyName = companyName
                             )
                     )
             val dataPart = dataJson.toRequestBody("application/json".toMediaTypeOrNull())
@@ -151,7 +158,24 @@ constructor(
                         MultipartBody.Part.createFormData("npwp", file.name, requestFile)
                     }
 
-            val response = profileApi.updateProfile(dataPart, ktpPart, kkPart, npwpPart)
+                    npwpFile?.let { file ->
+                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                        MultipartBody.Part.createFormData("npwp", file.name, requestFile)
+                    }
+
+            val selfiePart =
+                    selfieFile?.let { file ->
+                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                        MultipartBody.Part.createFormData("selfie", file.name, requestFile)
+                    }
+
+            val salarySlipPart =
+                    salarySlipFile?.let { file ->
+                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                        MultipartBody.Part.createFormData("salarySlip", file.name, requestFile)
+                    }
+
+            val response = profileApi.updateProfile(dataPart, ktpPart, kkPart, npwpPart, selfiePart, salarySlipPart)
 
             if (response.isSuccessful && response.body()?.success == true) {
                 val profileDto = response.body()!!.data!!
@@ -176,7 +200,13 @@ constructor(
                                 npwpPath = profileDto.npwpUrl,
                                 bankName = profileDto.bankName,
                                 accountNumber = profileDto.accountNumber,
+
+
                                 accountHolderName = profileDto.accountHolderName,
+                                job = profileDto.job,
+                                companyName = profileDto.companyName,
+                                selfiePath = profileDto.selfieUrl,
+                                salarySlipPath = profileDto.salarySlipUrl,
                                 isComplete = profileDto.isComplete ?: false
                         )
                 )
@@ -227,7 +257,15 @@ constructor(
             val errorBody = response.errorBody()?.string()
             if (errorBody != null) {
                 val jsonObject = gson.fromJson(errorBody, JsonObject::class.java)
-                jsonObject.get("message")?.asString ?: "Terjadi kesalahan"
+                val message = jsonObject.get("message")?.asString ?: "Terjadi kesalahan"
+                
+                val errors = jsonObject.get("errors")?.asJsonArray
+                if (errors != null && errors.size() > 0) {
+                    val errorList = errors.map { it.asString.replace("\"", "") }.joinToString("\n")
+                    "$message:\n$errorList"
+                } else {
+                    message
+                }
             } else {
                 "Terjadi kesalahan"
             }

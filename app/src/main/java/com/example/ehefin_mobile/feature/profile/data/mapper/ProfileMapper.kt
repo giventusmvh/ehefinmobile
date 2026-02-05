@@ -20,6 +20,10 @@ fun ProfileResponseDto.toEntity(): ProfileEntity {
             bankName = profile?.bankName,
             accountNumber = profile?.accountNumber,
             accountHolderName = profile?.accountHolderName,
+            job = profile?.job,
+            companyName = profile?.companyName,
+            selfiePath = profile?.selfieUrl?.let { sanitizeUrl(it) },
+            salarySlipPath = profile?.salarySlipUrl?.let { sanitizeUrl(it) },
             isComplete = profile?.isComplete ?: false
     )
 }
@@ -39,6 +43,10 @@ fun ProfileEntity.toDomain(): UserProfile {
             bankName = bankName,
             accountNumber = accountNumber,
             accountHolderName = accountHolderName,
+            job = job,
+            companyName = companyName,
+            selfiePath = selfiePath,
+            salarySlipPath = salarySlipPath,
             isComplete = isComplete
     )
 }
@@ -70,6 +78,10 @@ fun UpdateProfileResponseDto.toDomain(
             bankName = bankName,
             accountNumber = accountNumber,
             accountHolderName = accountHolderName,
+            job = job,
+            companyName = companyName,
+            selfiePath = selfieUrl?.let { sanitizeUrl(it) },
+            salarySlipPath = salarySlipUrl?.let { sanitizeUrl(it) },
             isComplete = isComplete ?: false
     )
 }
@@ -86,6 +98,9 @@ private fun sanitizeUrl(url: String): String {
         sanitized = "http://10.0.2.2:8080$sanitized"
     } else if (sanitized.startsWith("uploads/")) {
         sanitized = "http://10.0.2.2:8080/$sanitized"
+    } else if (!sanitized.startsWith("http")) {
+        // Assume it's a relative path/filename that needs base URL
+        sanitized = "http://10.0.2.2:8080/uploads/$sanitized"
     }
     
     return sanitized

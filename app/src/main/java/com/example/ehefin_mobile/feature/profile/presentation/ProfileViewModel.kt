@@ -36,9 +36,13 @@ sealed class ProfileEvent {
             val accountNumber: String,
             val accountHolderName: String,
             val birthdate: String,
+            val job: String,
+            val companyName: String,
             val ktpFile: File? = null,
             val kkFile: File? = null,
-            val npwpFile: File? = null
+            val npwpFile: File? = null,
+            val selfieFile: File? = null,
+            val salarySlipFile: File? = null
     ) : ProfileEvent()
     object ResetMessage : ProfileEvent() // Reset success/error messages
 }
@@ -124,9 +128,13 @@ constructor(
                             accountNumber = event.accountNumber,
                             accountHolderName = event.accountHolderName,
                             birthdate = event.birthdate,
+                            job = event.job,
+                            companyName = event.companyName,
                             ktpFile = event.ktpFile,
                             kkFile = event.kkFile,
-                            npwpFile = event.npwpFile
+                            npwpFile = event.npwpFile,
+                            selfieFile = event.selfieFile,
+                            salarySlipFile = event.salarySlipFile
                     )
 
             when (result) {

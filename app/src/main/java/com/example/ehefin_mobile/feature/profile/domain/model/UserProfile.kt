@@ -17,5 +17,9 @@ data class UserProfile(
     val bankName: String?,
     val accountNumber: String?,
     val accountHolderName: String?,
+    val job: String?,
+    val companyName: String?,
+    val selfiePath: String?,
+    val salarySlipPath: String?,
     val isComplete: Boolean
 )

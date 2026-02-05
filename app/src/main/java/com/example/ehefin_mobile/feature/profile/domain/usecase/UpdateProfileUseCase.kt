@@ -16,9 +16,13 @@ class UpdateProfileUseCase @Inject constructor(private val profileRepository: Pr
             accountNumber: String,
             accountHolderName: String,
             birthdate: String,
+            job: String,
+            companyName: String,
             ktpFile: File? = null,
             kkFile: File? = null,
-            npwpFile: File? = null
+            npwpFile: File? = null,
+            selfieFile: File? = null,
+            salarySlipFile: File? = null
     ): Resource<UserProfile> {
         // Validation
         if (nik.isNotEmpty() && nik.length != 16) {
@@ -36,9 +40,13 @@ class UpdateProfileUseCase @Inject constructor(private val profileRepository: Pr
                 accountNumber = accountNumber,
                 accountHolderName = accountHolderName,
                 birthdate = birthdate,
+                job = job,
+                companyName = companyName,
                 ktpFile = ktpFile,
                 kkFile = kkFile,
-                npwpFile = npwpFile
+                npwpFile = npwpFile,
+                selfieFile = selfieFile,
+                salarySlipFile = salarySlipFile
         )
     }
 }
