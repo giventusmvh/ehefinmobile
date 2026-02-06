@@ -27,13 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -44,7 +44,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,12 +78,12 @@ fun RegisterScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                        title = { Text("Daftar Akun") },
+                        title = { Text(stringResource(R.string.register)) },
                         navigationIcon = {
                             IconButton(onClick = onNavigateBack) {
                                 Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Kembali"
+                                        contentDescription = stringResource(R.string.back)
                                 )
                             }
                         }
@@ -102,13 +101,13 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                    text = "Buat Akun Baru",
+                    text = stringResource(R.string.register_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                    text = "Daftar untuk mulai mengajukan pinjaman",
+                    text = stringResource(R.string.register_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -121,8 +120,8 @@ fun RegisterScreen(
             OutlinedTextField(
                     value = uiState.registerName,
                     onValueChange = viewModel::onRegisterNameChange,
-                    label = { Text("Nama Lengkap") },
-                    placeholder = { Text("Masukkan nama lengkap") },
+                    label = { Text(stringResource(R.string.register_name_hint)) },
+                    placeholder = { Text(stringResource(R.string.register_name_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions =
                             androidx.compose.foundation.text.KeyboardOptions(
@@ -144,8 +143,8 @@ fun RegisterScreen(
             OutlinedTextField(
                     value = uiState.registerEmail,
                     onValueChange = viewModel::onRegisterEmailChange,
-                    label = { Text("Email") },
-                    placeholder = { Text("contoh@email.com") },
+                    label = { Text(stringResource(R.string.register_email_hint)) },
+                    placeholder = { Text(stringResource(R.string.login_email_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions =
                             androidx.compose.foundation.text.KeyboardOptions(
@@ -168,7 +167,7 @@ fun RegisterScreen(
             OutlinedTextField(
                     value = uiState.registerPassword,
                     onValueChange = viewModel::onRegisterPasswordChange,
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.register_password_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = if (passwordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
@@ -179,8 +178,8 @@ fun RegisterScreen(
                     trailingIcon = {
                         androidx.compose.material3.IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                imageVector = if (passwordVisible) androidx.compose.material.icons.Icons.Filled.Visibility else androidx.compose.material.icons.Icons.Filled.VisibilityOff,
-                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                contentDescription = null
                             )
                         }
                     }
@@ -193,7 +192,7 @@ fun RegisterScreen(
             OutlinedTextField(
                     value = uiState.registerConfirmPassword,
                     onValueChange = viewModel::onRegisterConfirmPasswordChange,
-                    label = { Text("Konfirmasi Password") },
+                    label = { Text(stringResource(R.string.register_confirm_password_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = if (confirmPasswordVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
@@ -207,8 +206,8 @@ fun RegisterScreen(
                     trailingIcon = {
                         androidx.compose.material3.IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                             Icon(
-                                imageVector = if (confirmPasswordVisible) androidx.compose.material.icons.Icons.Filled.Visibility else androidx.compose.material.icons.Icons.Filled.VisibilityOff,
-                                contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                                imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                contentDescription = null
                             )
                         }
                     }
@@ -232,7 +231,7 @@ fun RegisterScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    Text("Daftar")
+                    Text(stringResource(R.string.register_button))
                 }
             }
 
@@ -241,12 +240,12 @@ fun RegisterScreen(
             // Login link
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                        text = "Sudah punya akun?",
+                        text = stringResource(R.string.already_have_account),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 androidx.compose.material3.TextButton(onClick = onNavigateBack) {
-                    Text("Masuk")
+                    Text(stringResource(R.string.login_here))
                 }
             }
 

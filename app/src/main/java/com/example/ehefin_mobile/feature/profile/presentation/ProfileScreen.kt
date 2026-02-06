@@ -46,12 +46,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.feature.profile.domain.model.UserProfile
 import com.example.ehefin_mobile.navigation.Screen
 
@@ -72,10 +74,10 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil Saya") },
+                title = { Text(stringResource(R.string.profile_title)) },
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.EditProfile.route) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Profil")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_profile))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -127,13 +129,13 @@ fun ProfileScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        text = "Profil Belum Lengkap",
+                                        text = stringResource(R.string.profile_incomplete),
                                         style = MaterialTheme.typography.titleSmall,
                                         color = MaterialTheme.colorScheme.onErrorContainer,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "Lengkapi data diri dan dokumen untuk mengajukan pinjaman.",
+                                        text = stringResource(R.string.profile_incomplete_desc),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
@@ -146,7 +148,7 @@ fun ProfileScreen(
                                     containerColor = MaterialTheme.colorScheme.error
                                 )
                             ) {
-                                Text("Lengkapi Sekarang")
+                                Text(stringResource(R.string.complete_now))
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                         }
@@ -154,58 +156,58 @@ fun ProfileScreen(
 
                     // Personal Info
                     ProfileSection(
-                        title = "Data Diri",
+                        title = stringResource(R.string.personal_info),
                         icon = Icons.Default.Person
                     ) {
-                        ProfileInfoRow(label = "NIK", value = uiState.profile?.nik)
-                        ProfileInfoRow(label = "Tanggal Lahir", value = uiState.profile?.birthdate)
-                        ProfileInfoRow(label = "Pekerjaan", value = uiState.profile?.job)
-                        ProfileInfoRow(label = "Perusahaan", value = uiState.profile?.companyName)
-                        ProfileInfoRow(label = "No. Telepon", value = uiState.profile?.phoneNumber)
-                        ProfileInfoRow(label = "Alamat", value = uiState.profile?.address)
+                        ProfileInfoRow(label = stringResource(R.string.label_nik), value = uiState.profile?.nik)
+                        ProfileInfoRow(label = stringResource(R.string.label_birthdate), value = uiState.profile?.birthdate)
+                        ProfileInfoRow(label = stringResource(R.string.label_job), value = uiState.profile?.job)
+                        ProfileInfoRow(label = stringResource(R.string.label_company), value = uiState.profile?.companyName)
+                        ProfileInfoRow(label = stringResource(R.string.label_phone), value = uiState.profile?.phoneNumber)
+                        ProfileInfoRow(label = stringResource(R.string.label_address), value = uiState.profile?.address)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Bank Info
                     ProfileSection(
-                        title = "Data Rekening",
+                        title = stringResource(R.string.bank_info),
                         icon = Icons.Default.AccountBalance
                     ) {
-                        ProfileInfoRow(label = "Nama Bank", value = uiState.profile?.bankName)
-                        ProfileInfoRow(label = "No. Rekening", value = uiState.profile?.accountNumber)
-                        ProfileInfoRow(label = "Nama Pemilik", value = uiState.profile?.accountHolderName)
+                        ProfileInfoRow(label = stringResource(R.string.label_bank_name), value = uiState.profile?.bankName)
+                        ProfileInfoRow(label = stringResource(R.string.label_account_number), value = uiState.profile?.accountNumber)
+                        ProfileInfoRow(label = stringResource(R.string.label_account_holder), value = uiState.profile?.accountHolderName)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Documents
                     ProfileSection(
-                        title = "Dokumen",
+                        title = stringResource(R.string.documents),
                         icon = Icons.Default.Description
                     ) {
                         DocumentItem(
-                            label = "KTP",
+                            label = stringResource(R.string.label_ktp),
                             imageUrl = uiState.profile?.ktpPath,
                             accessToken = uiState.accessToken
                         )
                         DocumentItem(
-                            label = "Kartu Keluarga",
+                            label = stringResource(R.string.label_kk),
                             imageUrl = uiState.profile?.kkPath,
                             accessToken = uiState.accessToken
                         )
                         DocumentItem(
-                            label = "NPWP",
+                            label = stringResource(R.string.label_npwp),
                             imageUrl = uiState.profile?.npwpPath,
                             accessToken = uiState.accessToken
                         )
                         DocumentItem(
-                            label = "Foto Selfie",
+                            label = stringResource(R.string.label_selfie),
                             imageUrl = uiState.profile?.selfiePath,
                             accessToken = uiState.accessToken
                         )
                         DocumentItem(
-                            label = "Slip Gaji",
+                            label = stringResource(R.string.label_salary_slip),
                             imageUrl = uiState.profile?.salarySlipPath,
                             accessToken = uiState.accessToken
                         )
@@ -263,7 +265,7 @@ fun ProfileHeader(
                     }
                     AsyncImage(
                         model = model,
-                        contentDescription = "Profile Photo",
+                        contentDescription = stringResource(R.string.profile_photo),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop
                     )
@@ -334,6 +336,7 @@ fun ProfileSection(
 
 @Composable
 fun ProfileInfoRow(label: String, value: String?) {
+    val emptyValue = stringResource(R.string.empty_value)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -346,7 +349,7 @@ fun ProfileInfoRow(label: String, value: String?) {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = if (value.isNullOrBlank()) "-" else value,
+            text = if (value.isNullOrBlank()) emptyValue else value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface
@@ -357,6 +360,9 @@ fun ProfileInfoRow(label: String, value: String?) {
 @Composable
 fun DocumentItem(label: String, imageUrl: String?, accessToken: String?) {
     val isUploaded = !imageUrl.isNullOrEmpty()
+    val uploadedText = stringResource(R.string.doc_uploaded)
+    val notUploadedText = stringResource(R.string.doc_not_uploaded)
+    val previewText = stringResource(R.string.preview_document, label)
     
     Column(
         modifier = Modifier
@@ -384,7 +390,7 @@ fun DocumentItem(label: String, imageUrl: String?, accessToken: String?) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Terupload",
+                        text = uploadedText,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -392,7 +398,7 @@ fun DocumentItem(label: String, imageUrl: String?, accessToken: String?) {
                 }
             } else {
                 Text(
-                    text = "Belum Ada",
+                    text = notUploadedText,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -426,7 +432,7 @@ fun DocumentItem(label: String, imageUrl: String?, accessToken: String?) {
             ) {
                  AsyncImage(
                     model = model,
-                    contentDescription = "Preview $label",
+                    contentDescription = previewText,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                     error = androidx.compose.ui.graphics.vector.rememberVectorPainter(Icons.Default.Warning)

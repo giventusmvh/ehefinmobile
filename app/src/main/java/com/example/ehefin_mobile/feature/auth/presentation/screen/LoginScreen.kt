@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.feature.auth.presentation.components.GoogleSignInButton
 import com.example.ehefin_mobile.feature.auth.presentation.components.OrDivider
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
@@ -167,7 +169,7 @@ fun LoginScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "EheFin",
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.headlineLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -178,13 +180,13 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Selamat Datang!",
+                    text = stringResource(R.string.login_title),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Text(
-                    text = "Masuk ke akun Anda untuk melanjutkan",
+                    text = stringResource(R.string.login_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -211,8 +213,8 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = uiState.loginEmail,
                     onValueChange = viewModel::onLoginEmailChange,
-                    label = { Text("Email") },
-                    placeholder = { Text("contoh@email.com") },
+                    label = { Text(stringResource(R.string.label_email)) },
+                    placeholder = { Text(stringResource(R.string.login_email_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions =
                     androidx.compose.foundation.text.KeyboardOptions(
@@ -235,7 +237,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = uiState.loginPassword,
                     onValueChange = viewModel::onLoginPasswordChange,
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.login_password_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -250,7 +252,7 @@ fun LoginScreen(
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                                contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                contentDescription = null
                             )
                         }
                     }
@@ -264,7 +266,7 @@ fun LoginScreen(
                         onClick = onNavigateToForgotPassword,
                         modifier = Modifier.align(Alignment.CenterEnd)
                     ) {
-                        Text("Lupa Password?")
+                        Text(stringResource(R.string.forgot_password))
                     }
                 }
 
@@ -282,7 +284,7 @@ fun LoginScreen(
                             modifier = Modifier.size(24.dp)
                         )
                     } else {
-                        Text("Masuk")
+                        Text(stringResource(R.string.login_button))
                     }
                 }
 
@@ -291,12 +293,12 @@ fun LoginScreen(
                 // Register link
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Belum punya akun?",
+                        text = stringResource(R.string.no_account),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     TextButton(onClick = onNavigateToRegister) {
-                        Text("Daftar Sekarang")
+                        Text(stringResource(R.string.register_here))
                     }
                 }
 

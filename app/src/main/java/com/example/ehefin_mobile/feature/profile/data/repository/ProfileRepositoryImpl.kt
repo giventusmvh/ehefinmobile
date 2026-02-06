@@ -1,221 +1,160 @@
 package com.example.ehefin_mobile.feature.profile.data.repository
 
+import com.example.ehefin_mobile.core.common.DataResult
 import com.example.ehefin_mobile.core.common.Resource
 import com.example.ehefin_mobile.core.datastore.TokenManager
 import com.example.ehefin_mobile.core.di.IoDispatcher
 import com.example.ehefin_mobile.core.network.NetworkMonitor
 import com.example.ehefin_mobile.feature.profile.data.mapper.toDomain
 import com.example.ehefin_mobile.feature.profile.data.mapper.toEntity
-import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileDao
 import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileEntity
-import com.example.ehefin_mobile.feature.profile.data.source.remote.ProfileApi
-import com.example.ehefin_mobile.feature.profile.data.source.remote.dto.FcmTokenRequest
-import com.example.ehefin_mobile.feature.profile.data.source.remote.dto.UpdateProfileRequest
+import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileLocalDataSource
+import com.example.ehefin_mobile.feature.profile.data.source.remote.ProfileRemoteDataSource
 import com.example.ehefin_mobile.feature.profile.domain.model.UserProfile
 import com.example.ehefin_mobile.feature.profile.domain.repository.ProfileRepository
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-import java.io.File
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.Response
+import java.io.File
+import javax.inject.Inject
 
-class ProfileRepositoryImpl
-@Inject
-constructor(
-        private val profileApi: ProfileApi,
-        private val profileDao: ProfileDao,
-        private val tokenManager: TokenManager,
-        private val networkMonitor: NetworkMonitor,
-        private val gson: Gson,
-        @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+/**
+ * Implementation of ProfileRepository using DataSource interfaces.
+ * Handles offline-first caching strategy with proper layer separation.
+ */
+class ProfileRepositoryImpl @Inject constructor(
+    private val remoteDataSource: ProfileRemoteDataSource,
+    private val localDataSource: ProfileLocalDataSource,
+    private val tokenManager: TokenManager,
+    private val networkMonitor: NetworkMonitor,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ProfileRepository {
 
-    override fun getProfile(): Flow<Resource<UserProfile>> =
-            flow {
-                        emit(Resource.Loading())
+    override fun getProfile(): Flow<Resource<UserProfile>> = flow {
+        emit(Resource.Loading())
 
-                        // 1. Get userId from session
-                        val userId = tokenManager.getUserId().first()
+        // 1. Get userId from session
+        val userId = tokenManager.getUserId().first()
 
-                        if (userId != null) {
-                            // 2. Emit cached data
-                            val cachedProfile = profileDao.getProfileByUserIdSync(userId)
-                            if (cachedProfile != null) {
-                                emit(Resource.Success(cachedProfile.toDomain()))
-                            }
+        if (userId != null) {
+            // 2. Emit cached data first (offline-first)
+            val cachedResult = localDataSource.getProfile(userId)
+            if (cachedResult is DataResult.Success && cachedResult.data != null) {
+                emit(Resource.Success(cachedResult.data.toDomain()))
+            }
 
-                            // 3. Fetch from network
-                            if (networkMonitor.isOnline()) {
-                                try {
-                                    val response = profileApi.getProfile()
-                                    if (response.isSuccessful && response.body()?.success == true) {
-                                        val profileDto = response.body()!!.data!!
-                                        // Update cache
-                                        profileDao.insertProfile(profileDto.toEntity())
-                                        emit(Resource.Success(profileDto.toDomain()))
-                                    } else {
-                                        val error = parseErrorMessage(response)
-                                        if (cachedProfile != null) {
-                                            emit(Resource.Error(error, cachedProfile.toDomain()))
-                                        } else {
-                                            emit(Resource.Error(error))
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    val error = "Gagal memuat profil: ${e.localizedMessage}"
-                                    if (cachedProfile != null) {
-                                        emit(Resource.Error(error, cachedProfile.toDomain()))
-                                    } else {
-                                        emit(Resource.Error(error))
-                                    }
-                                }
-                            } else {
-                                if (cachedProfile == null) {
-                                    emit(Resource.Error("Tidak ada koneksi internet"))
-                                }
-                            }
+            // 3. Fetch from network if online
+            if (networkMonitor.isOnline()) {
+                when (val remoteResult = remoteDataSource.getProfile()) {
+                    is DataResult.Success -> {
+                        // Update cache
+                        val entity = remoteResult.data.toEntity()
+                        localDataSource.saveProfile(entity)
+                        emit(Resource.Success(remoteResult.data.toDomain()))
+                    }
+                    is DataResult.Error -> {
+                        // If we have cached data, return error with cached data
+                        val cached = (cachedResult as? DataResult.Success)?.data
+                        if (cached != null) {
+                            emit(Resource.Error(remoteResult.message, cached.toDomain()))
                         } else {
-                            emit(Resource.Error("User ID tidak ditemukan"))
+                            emit(Resource.Error(remoteResult.message))
                         }
                     }
-                    .flowOn(ioDispatcher)
+                }
+            } else {
+                // Offline: if no cache, emit error
+                if (cachedResult !is DataResult.Success || cachedResult.data == null) {
+                    emit(Resource.Error("Tidak ada koneksi internet"))
+                }
+            }
+        } else {
+            emit(Resource.Error("User ID tidak ditemukan"))
+        }
+    }.flowOn(ioDispatcher)
 
     override suspend fun updateProfile(
-            nik: String,
-            phoneNumber: String,
-            address: String,
-            bankName: String,
-            accountNumber: String,
-            accountHolderName: String,
-            birthdate: String,
-            job: String,
-            companyName: String,
-            ktpFile: File?,
-            kkFile: File?,
-            npwpFile: File?,
-            selfieFile: File?,
-            salarySlipFile: File?
+        nik: String,
+        phoneNumber: String,
+        address: String,
+        bankName: String,
+        accountNumber: String,
+        accountHolderName: String,
+        birthdate: String,
+        job: String,
+        companyName: String,
+        ktpFile: File?,
+        kkFile: File?,
+        npwpFile: File?,
+        selfieFile: File?,
+        salarySlipFile: File?
     ): Resource<UserProfile> {
         if (!networkMonitor.isOnline()) {
             return Resource.Error("Tidak ada koneksi internet")
         }
 
-        return try {
-            // Get existing profile for userId, name, email (not returned in update response)
-            val userId = tokenManager.getUserId().first()
-            val existingProfile =
-                    if (userId != null) {
-                        profileDao.getProfileByUserIdSync(userId)
-                    } else null
+        // Get existing profile for userId, name, email (not returned in update response)
+        val userId = tokenManager.getUserId().first()
+        val existingProfileResult = if (userId != null) {
+            localDataSource.getProfile(userId)
+        } else null
 
-            if (existingProfile == null) {
-                return Resource.Error("Profil tidak ditemukan")
-            }
+        val existingProfile = (existingProfileResult as? DataResult.Success)?.data
+        if (existingProfile == null) {
+            return Resource.Error("Profil tidak ditemukan")
+        }
 
-            // Create JSON data part
-            val dataJson =
-                    gson.toJson(
-                            UpdateProfileRequest(
-                                    nik = nik,
-                                    phone = phoneNumber,
-                                    address = address,
-                                    bankName = bankName,
-                                    accountNumber = accountNumber,
-                                    accountHolderName = accountHolderName,
-
-                                    birthdate = birthdate,
-                                    job = job,
-                                    companyName = companyName
-                            )
+        return when (val result = remoteDataSource.updateProfile(
+            nik = nik,
+            phoneNumber = phoneNumber,
+            address = address,
+            bankName = bankName,
+            accountNumber = accountNumber,
+            accountHolderName = accountHolderName,
+            birthdate = birthdate,
+            job = job,
+            companyName = companyName,
+            ktpFile = ktpFile,
+            kkFile = kkFile,
+            npwpFile = npwpFile,
+            selfieFile = selfieFile,
+            salarySlipFile = salarySlipFile
+        )) {
+            is DataResult.Success -> {
+                val profileDto = result.data
+                val userProfile = profileDto.toDomain(
+                    existingUserId = existingProfile.userId,
+                    existingName = existingProfile.name,
+                    existingEmail = existingProfile.email
+                )
+                // Update cache
+                localDataSource.saveProfile(
+                    ProfileEntity(
+                        userId = existingProfile.userId,
+                        name = existingProfile.name,
+                        email = existingProfile.email,
+                        nik = profileDto.nik,
+                        birthdate = profileDto.birthdate,
+                        phoneNumber = profileDto.phoneNumber,
+                        address = profileDto.address,
+                        ktpPath = profileDto.ktpUrl,
+                        kkPath = profileDto.kkUrl,
+                        npwpPath = profileDto.npwpUrl,
+                        bankName = profileDto.bankName,
+                        accountNumber = profileDto.accountNumber,
+                        accountHolderName = profileDto.accountHolderName,
+                        job = profileDto.job,
+                        companyName = profileDto.companyName,
+                        selfiePath = profileDto.selfieUrl,
+                        salarySlipPath = profileDto.salarySlipUrl,
+                        isComplete = profileDto.isComplete ?: false
                     )
-            val dataPart = dataJson.toRequestBody("application/json".toMediaTypeOrNull())
-
-            // Create file parts
-            val ktpPart =
-                    ktpFile?.let { file ->
-                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        MultipartBody.Part.createFormData("ktp", file.name, requestFile)
-                    }
-
-            val kkPart =
-                    kkFile?.let { file ->
-                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        MultipartBody.Part.createFormData("kk", file.name, requestFile)
-                    }
-
-            val npwpPart =
-                    npwpFile?.let { file ->
-                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        MultipartBody.Part.createFormData("npwp", file.name, requestFile)
-                    }
-
-                    npwpFile?.let { file ->
-                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        MultipartBody.Part.createFormData("npwp", file.name, requestFile)
-                    }
-
-            val selfiePart =
-                    selfieFile?.let { file ->
-                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        MultipartBody.Part.createFormData("selfie", file.name, requestFile)
-                    }
-
-            val salarySlipPart =
-                    salarySlipFile?.let { file ->
-                        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        MultipartBody.Part.createFormData("salarySlip", file.name, requestFile)
-                    }
-
-            val response = profileApi.updateProfile(dataPart, ktpPart, kkPart, npwpPart, selfiePart, salarySlipPart)
-
-            if (response.isSuccessful && response.body()?.success == true) {
-                val profileDto = response.body()!!.data!!
-                val userProfile =
-                        profileDto.toDomain(
-                                existingUserId = existingProfile.userId,
-                                existingName = existingProfile.name,
-                                existingEmail = existingProfile.email
-                        )
-                // Update cache with new profile data merged with existing
-                profileDao.insertProfile(
-                        ProfileEntity(
-                                userId = existingProfile.userId,
-                                name = existingProfile.name,
-                                email = existingProfile.email,
-                                nik = profileDto.nik,
-                                birthdate = profileDto.birthdate,
-                                phoneNumber = profileDto.phoneNumber,
-                                address = profileDto.address,
-                                ktpPath = profileDto.ktpUrl,
-                                kkPath = profileDto.kkUrl,
-                                npwpPath = profileDto.npwpUrl,
-                                bankName = profileDto.bankName,
-                                accountNumber = profileDto.accountNumber,
-
-
-                                accountHolderName = profileDto.accountHolderName,
-                                job = profileDto.job,
-                                companyName = profileDto.companyName,
-                                selfiePath = profileDto.selfieUrl,
-                                salarySlipPath = profileDto.salarySlipUrl,
-                                isComplete = profileDto.isComplete ?: false
-                        )
                 )
                 Resource.Success(userProfile)
-            } else {
-                Resource.Error(parseErrorMessage(response))
             }
-        } catch (e: Exception) {
-            Resource.Error("Gagal update profil: ${e.localizedMessage}")
+            is DataResult.Error -> Resource.Error(result.message)
         }
     }
 
@@ -224,53 +163,23 @@ constructor(
             return Resource.Error("Tidak ada koneksi internet")
         }
 
-        return try {
-            val response = profileApi.registerFcmToken(FcmTokenRequest(token))
-            if (response.isSuccessful && response.body()?.success == true) {
-                Resource.Success(Unit)
-            } else {
-                Resource.Error(parseErrorMessage(response))
-            }
-        } catch (e: Exception) {
-            Resource.Error("Gagal register token: ${e.localizedMessage}")
+        return when (val result = remoteDataSource.registerFcmToken(token)) {
+            is DataResult.Success -> Resource.Success(Unit)
+            is DataResult.Error -> Resource.Error(result.message)
         }
     }
 
     override suspend fun refreshProfile(): Resource<Unit> {
-        if (!networkMonitor.isOnline()) return Resource.Error("Offline")
-
-        return try {
-            val response = profileApi.getProfile()
-            if (response.isSuccessful && response.body()?.success == true) {
-                profileDao.insertProfile(response.body()!!.data!!.toEntity())
-                Resource.Success(Unit)
-            } else {
-                Resource.Error("Gagal refresh")
-            }
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Unknown error")
+        if (!networkMonitor.isOnline()) {
+            return Resource.Error("Offline")
         }
-    }
 
-    private fun <T> parseErrorMessage(response: Response<T>): String {
-        return try {
-            val errorBody = response.errorBody()?.string()
-            if (errorBody != null) {
-                val jsonObject = gson.fromJson(errorBody, JsonObject::class.java)
-                val message = jsonObject.get("message")?.asString ?: "Terjadi kesalahan"
-                
-                val errors = jsonObject.get("errors")?.asJsonArray
-                if (errors != null && errors.size() > 0) {
-                    val errorList = errors.map { it.asString.replace("\"", "") }.joinToString("\n")
-                    "$message:\n$errorList"
-                } else {
-                    message
-                }
-            } else {
-                "Terjadi kesalahan"
+        return when (val result = remoteDataSource.getProfile()) {
+            is DataResult.Success -> {
+                localDataSource.saveProfile(result.data.toEntity())
+                Resource.Success(Unit)
             }
-        } catch (e: Exception) {
-            "Terjadi kesalahan"
+            is DataResult.Error -> Resource.Error(result.message)
         }
     }
 }

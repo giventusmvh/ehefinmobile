@@ -1,3 +1,200 @@
 <resources>
-    <string name="app_name">ehefin-mobile</string>
+    <string name="app_name">Ehefin</string>
+
+    <!-- Common -->
+    <string name="loading">Memuat...</string>
+    <string name="error_occurred">Terjadi kesalahan</string>
+    <string name="retry">Coba Lagi</string>
+    <string name="save">Simpan</string>
+    <string name="cancel">Batal</string>
+    <string name="close">Tutup</string>
+    <string name="next">Selanjutnya</string>
+    <string name="back">Kembali</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Hapus</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+    <string name="empty_value">-</string>
+    <string name="no_internet">Tidak ada koneksi internet</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_title">Profil Saya</string>
+    <string name="edit_profile">Edit Profil</string>
+    <string name="profile_incomplete">Profil Belum Lengkap</string>
+    <string name="profile_incomplete_desc">Lengkapi data diri dan dokumen untuk mengajukan pinjaman.</string>
+    <string name="complete_now">Lengkapi Sekarang</string>
+    <string name="profile_photo">Foto Profil</string>
+
+    <!-- Profile - Personal Info -->
+    <string name="personal_info">Data Diri</string>
+    <string name="label_nik">NIK</string>
+    <string name="label_birthdate">Tanggal Lahir</string>
+    <string name="label_job">Pekerjaan</string>
+    <string name="label_company">Perusahaan</string>
+    <string name="label_phone">No. Telepon</string>
+    <string name="label_address">Alamat</string>
+    <string name="label_name">Nama</string>
+    <string name="label_email">Email</string>
+
+    <!-- Profile - Bank Info -->
+    <string name="bank_info">Data Rekening</string>
+    <string name="label_bank_name">Nama Bank</string>
+    <string name="label_account_number">No. Rekening</string>
+    <string name="label_account_holder">Nama Pemilik</string>
+
+    <!-- Profile - Documents -->
+    <string name="documents">Dokumen</string>
+    <string name="label_ktp">KTP</string>
+    <string name="label_kk">Kartu Keluarga</string>
+    <string name="label_npwp">NPWP</string>
+    <string name="label_selfie">Foto Selfie</string>
+    <string name="label_salary_slip">Slip Gaji</string>
+    <string name="doc_uploaded">Terupload</string>
+    <string name="doc_not_uploaded">Belum Ada</string>
+    <string name="preview_document">Preview %1$s</string>
+
+    <!-- Edit Profile Screen -->
+    <string name="save_profile">Simpan Profil</string>
+    <string name="saving">Menyimpan...</string>
+    <string name="profile_saved">Profil berhasil disimpan</string>
+    <string name="hint_nik">Masukkan 16 digit NIK</string>
+    <string name="hint_phone">Contoh: 08123456789</string>
+    <string name="hint_address">Masukkan alamat lengkap</string>
+    <string name="hint_bank_name">Contoh: BCA, Mandiri, BNI</string>
+    <string name="hint_account_number">Contoh: 1234567890</string>
+    <string name="hint_account_holder">Nama sesuai rekening</string>
+    <string name="hint_job">Contoh: Karyawan Swasta</string>
+    <string name="hint_company">Nama perusahaan</string>
+    <string name="select_date">Pilih Tanggal</string>
+    <string name="upload_document">Upload Dokumen</string>
+    <string name="change_document">Ganti Dokumen</string>
+    <string name="choose_file">Pilih File</string>
+
+    <!-- Auth - Login -->
+    <string name="login">Masuk</string>
+    <string name="login_title">Selamat Datang</string>
+    <string name="login_subtitle">Masuk ke akun Anda</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Kata Sandi</string>
+    <string name="login_button">Masuk</string>
+    <string name="forgot_password">Lupa Kata Sandi?</string>
+    <string name="no_account">Belum punya akun?</string>
+    <string name="register_here">Daftar di sini</string>
+    <string name="or">atau</string>
+    <string name="login_with_google">Masuk dengan Google</string>
+    <string name="login_error">Email atau kata sandi salah</string>
+
+    <!-- Auth - Register -->
+    <string name="register">Daftar</string>
+    <string name="register_title">Buat Akun Baru</string>
+    <string name="register_subtitle">Daftar untuk memulai</string>
+    <string name="register_name_hint">Nama Lengkap</string>
+    <string name="register_email_hint">Email</string>
+    <string name="register_password_hint">Kata Sandi</string>
+    <string name="register_confirm_password_hint">Konfirmasi Kata Sandi</string>
+    <string name="register_button">Daftar</string>
+    <string name="already_have_account">Sudah punya akun?</string>
+    <string name="login_here">Masuk di sini</string>
+    <string name="password_mismatch">Kata sandi tidak cocok</string>
+    <string name="password_too_short">Kata sandi minimal 6 karakter</string>
+    <string name="invalid_email">Format email tidak valid</string>
+    <string name="name_required">Nama wajib diisi</string>
+
+    <!-- Auth - Forgot Password -->
+    <string name="forgot_password_title">Lupa Kata Sandi</string>
+    <string name="forgot_password_subtitle">Masukkan email Anda untuk reset kata sandi</string>
+    <string name="send_reset_link">Kirim Link Reset</string>
+    <string name="reset_link_sent">Link reset telah dikirim ke email Anda</string>
+    <string name="back_to_login">Kembali ke Login</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Beranda</string>
+    <string name="welcome_user">Selamat datang, %1$s</string>
+    <string name="active_loan">Pinjaman Aktif</string>
+    <string name="no_active_loan">Belum ada pinjaman aktif</string>
+    <string name="apply_loan">Ajukan Pinjaman</string>
+    <string name="view_all_loans">Lihat Semua Pinjaman</string>
+    <string name="quick_menu">Menu Cepat</string>
+    <string name="logout">Keluar</string>
+    <string name="logout_confirmation">Apakah Anda yakin ingin keluar?</string>
+
+    <!-- Loan List Screen -->
+    <string name="loan_list_title">Daftar Pinjaman</string>
+    <string name="no_loans">Belum ada pinjaman</string>
+    <string name="loan_amount">Jumlah Pinjaman</string>
+    <string name="loan_status">Status</string>
+    <string name="loan_date">Tanggal Pengajuan</string>
+    <string name="loan_duration">Tenor</string>
+    <string name="months">%1$d bulan</string>
+
+    <!-- Loan Detail Screen -->
+    <string name="loan_detail_title">Detail Pinjaman</string>
+    <string name="loan_info">Informasi Pinjaman</string>
+    <string name="loan_history">Riwayat Pinjaman</string>
+    <string name="principal_amount">Pokok Pinjaman</string>
+    <string name="interest_rate">Bunga</string>
+    <string name="monthly_payment">Cicilan per Bulan</string>
+    <string name="total_payment">Total Pembayaran</string>
+    <string name="disbursement_date">Tanggal Pencairan</string>
+    <string name="due_date">Jatuh Tempo</string>
+    <string name="purpose">Tujuan Pinjaman</string>
+    <string name="branch">Cabang</string>
+    <string name="status_pending">Menunggu</string>
+    <string name="status_approved">Disetujui</string>
+    <string name="status_rejected">Ditolak</string>
+    <string name="status_disbursed">Dicairkan</string>
+    <string name="status_paid">Lunas</string>
+    <string name="status_overdue">Telat Bayar</string>
+
+    <!-- Submit Loan Screen -->
+    <string name="submit_loan_title">Ajukan Pinjaman</string>
+    <string name="select_amount">Pilih Jumlah</string>
+    <string name="select_duration">Pilih Tenor</string>
+    <string name="select_purpose">Pilih Tujuan</string>
+    <string name="select_branch">Pilih Cabang</string>
+    <string name="loan_simulation">Simulasi Pinjaman</string>
+    <string name="submit_loan">Ajukan Pinjaman</string>
+    <string name="loan_submitted">Pinjaman berhasil diajukan</string>
+    <string name="terms_conditions">Syarat dan Ketentuan</string>
+    <string name="agree_terms">Saya menyetujui syarat dan ketentuan</string>
+
+    <!-- Plafond Screen -->
+    <string name="plafond_title">Plafond</string>
+    <string name="active_plafond">Plafond Aktif</string>
+    <string name="no_plafond">Belum ada plafond</string>
+    <string name="apply_plafond">Ajukan Plafond</string>
+    <string name="select_plafond">Pilih Plafond</string>
+    <string name="credit_limit">Limit Kredit</string>
+    <string name="available_limit">Limit Tersedia</string>
+    <string name="used_limit">Limit Terpakai</string>
+    <string name="plafond_status">Status Plafond</string>
+    <string name="plafond_active">Aktif</string>
+    <string name="plafond_inactive">Tidak Aktif</string>
+    <string name="plafond_pending">Menunggu Persetujuan</string>
+    <string name="select_product">Pilih Produk</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Beranda</string>
+    <string name="nav_loans">Pinjaman</string>
+    <string name="nav_profile">Profil</string>
+    <string name="nav_plafond">Plafond</string>
+
+    <!-- Currency Format -->
+    <string name="currency_format">Rp %1$s</string>
+    <string name="percent_format">%1$s%%</string>
+
+    <!-- Home Screen Additional -->
+    <string name="home_welcome_guest">Selamat Datang, Tamu!</string>
+    <string name="home_manage_loans">Kelola pinjaman Anda dengan mudah</string>
+    <string name="home_login_prompt">Silahkan login untuk mengakses fitur lengkap</string>
+    <string name="home_restricted_access">Akses Terbatas</string>
+    <string name="home_login_now">Login Sekarang</string>
+    <string name="home_login_benefit">Dapatkan akses penuh untuk mengajukan pinjaman dan melihat limit plafond Anda.</string>
+    <string name="home_login_register">Masuk / Daftar</string>
+    <string name="home_check_plafond">Cek Detail Plafond</string>
+    <string name="home_no_limit">Belum Ada Limit</string>
+    <string name="home_apply_plafond_desc">Mulai ajukan plafond untuk dapat melakukan pinjaman.</string>
+    <string name="home_apply_loan_menu">Ajukan\nPinjaman</string>
+    <string name="home_tips_title">💡 Tips</string>
+    <string name="home_tips_content">Pastikan profil Anda sudah lengkap termasuk foto KTP, KK, dan NPWP untuk mempercepat proses persetujuan pinjaman.</string>
 </resources>

@@ -1,9 +1,17 @@
 package com.example.ehefin_mobile.feature.profile.data.mapper
 
+import com.example.ehefin_mobile.BuildConfig
 import com.example.ehefin_mobile.feature.profile.data.source.local.ProfileEntity
 import com.example.ehefin_mobile.feature.profile.data.source.remote.dto.ProfileResponseDto
 import com.example.ehefin_mobile.feature.profile.data.source.remote.dto.UpdateProfileResponseDto
 import com.example.ehefin_mobile.feature.profile.domain.model.UserProfile
+
+/**
+ * Base URL without the /api/ suffix for constructing file URLs
+ */
+private val FILE_BASE_URL: String by lazy {
+    BuildConfig.ACTIVE_BASE_URL.removeSuffix("api/").removeSuffix("/")
+}
 
 fun ProfileResponseDto.toEntity(): ProfileEntity {
     return ProfileEntity(
@@ -88,19 +96,19 @@ fun UpdateProfileResponseDto.toDomain(
 
 private fun sanitizeUrl(url: String): String {
     // Handle Postman variable placeholder
-    var sanitized = url.replace("{{baseURL}}", "http://10.0.2.2:8080")
+    var sanitized = url.replace("{{baseURL}}", FILE_BASE_URL)
     
     // Handle localhost for emulator
     sanitized = sanitized.replace("localhost", "10.0.2.2")
     
     // Handle relative paths
     if (sanitized.startsWith("/")) {
-        sanitized = "http://10.0.2.2:8080$sanitized"
+        sanitized = "$FILE_BASE_URL$sanitized"
     } else if (sanitized.startsWith("uploads/")) {
-        sanitized = "http://10.0.2.2:8080/$sanitized"
+        sanitized = "$FILE_BASE_URL/$sanitized"
     } else if (!sanitized.startsWith("http")) {
         // Assume it's a relative path/filename that needs base URL
-        sanitized = "http://10.0.2.2:8080/uploads/$sanitized"
+        sanitized = "$FILE_BASE_URL/uploads/$sanitized"
     }
     
     return sanitized

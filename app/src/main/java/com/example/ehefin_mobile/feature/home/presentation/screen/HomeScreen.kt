@@ -36,10 +36,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.core.common.toCurrencyFormat
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
 import androidx.compose.material.icons.filled.Lock
@@ -75,7 +77,7 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "EheFin",
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -93,12 +95,12 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
-                                contentDescription = if (isLoggedIn) "Logout" else "Login",
+                                contentDescription = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login),
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = if (isLoggedIn) "Keluar" else "Masuk",
+                                text = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login_button),
                                 style = MaterialTheme.typography.labelMedium
                             )
                         }
@@ -113,7 +115,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Ajukan Pinjaman",
+                    contentDescription = stringResource(R.string.apply_loan),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -128,13 +130,13 @@ fun HomeScreen(
         ) {
             // Welcome Section
             Text(
-                text = if (isLoggedIn) "Selamat Datang!" else "Selamat Datang, Tamu!",
+                text = if (isLoggedIn) stringResource(R.string.login_title) else stringResource(R.string.home_welcome_guest),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = if (isLoggedIn) "Kelola pinjaman Anda dengan mudah" else "Silahkan login untuk mengakses fitur lengkap",
+                text = if (isLoggedIn) stringResource(R.string.home_manage_loans) else stringResource(R.string.home_login_prompt),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)
@@ -158,19 +160,19 @@ fun HomeScreen(
                 ) {
                     if (!isLoggedIn) {
                          Text(
-                            text = "Akses Terbatas",
+                            text = stringResource(R.string.home_restricted_access),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Login Sekarang",
+                            text = stringResource(R.string.home_login_now),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                          Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                             text = "Dapatkan akses penuh untuk mengajukan pinjaman dan melihat limit plafond Anda.",
+                             text = stringResource(R.string.home_login_benefit),
                              style = MaterialTheme.typography.bodyMedium,
                              color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
@@ -181,13 +183,13 @@ fun HomeScreen(
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text(text = "Masuk / Daftar")
+                            Text(text = stringResource(R.string.home_login_register))
                         }
                     } else {
                         val activePlafond = plafondState.activePlafond
                         if (activePlafond != null) {
                             Text(
-                                text = "Limit Tersedia",
+                                text = stringResource(R.string.available_limit),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -204,23 +206,23 @@ fun HomeScreen(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text(text = "Cek Detail Plafond")
+                                Text(text = stringResource(R.string.home_check_plafond))
                             }
                         } else {
                             Text(
-                                text = "Belum Ada Limit",
+                                text = stringResource(R.string.home_no_limit),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Ajukan Plafond",
+                                text = stringResource(R.string.apply_plafond),
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                              Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                 text = "Mulai ajukan plafond untuk dapat melakukan pinjaman.",
+                                 text = stringResource(R.string.home_apply_plafond_desc),
                                  style = MaterialTheme.typography.bodyMedium,
                                  color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
@@ -231,7 +233,7 @@ fun HomeScreen(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text(text = "Pilih Plafond")
+                                Text(text = stringResource(R.string.select_plafond))
                             }
                         }
                     }
@@ -241,7 +243,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Menu Cepat",
+                text = stringResource(R.string.quick_menu),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -255,7 +257,7 @@ fun HomeScreen(
                 // For now keeping same UI, NavGraph handles redirection.
                 HomeMenuItem(
                     icon = Icons.Default.Add,
-                    title = "Ajukan\nPinjaman",
+                    title = stringResource(R.string.home_apply_loan_menu),
                     onClick = onNavigateToSubmitLoan,
                     modifier = Modifier.weight(1f)
                 )
@@ -279,13 +281,13 @@ fun HomeScreen(
                         .padding(20.dp)
                 ) {
                     Text(
-                        text = "💡 Tips",
+                        text = stringResource(R.string.home_tips_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Pastikan profil Anda sudah lengkap termasuk foto KTP, KK, dan NPWP untuk mempercepat proses persetujuan pinjaman.",
+                        text = stringResource(R.string.home_tips_content),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
