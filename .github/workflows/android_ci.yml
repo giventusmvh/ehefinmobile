@@ -25,6 +25,9 @@ jobs:
       - name: Check Formatting (Spotless)
         run: ./gradlew spotlessCheck
 
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
+
       - name: Build with Gradle
         run: ./gradlew assembleDebug
 
