@@ -21,7 +21,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // API Base URLs - Change for different environments
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/\"")
+        buildConfigField("String", "BASE_URL", "\"http://34.51.234.182/api/\"")
         buildConfigField("String", "BASE_URL_STAGING", "\"https://staging.ehefin.com/api/\"")
         buildConfigField("String", "BASE_URL_PRODUCTION", "\"https://api.ehefin.com/api/\"")
     }
@@ -29,7 +29,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://10.0.2.2:8080/api/\"")
+            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
         }
         release {
             isMinifyEnabled = true
@@ -38,7 +38,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "ACTIVE_BASE_URL", "\"https://api.ehefin.com/api/\"")
+            // Using the IP for now since there's no domain/SSL yet
+            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
         }
     }
 
