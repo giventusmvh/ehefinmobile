@@ -1,8 +1,10 @@
 package com.example.ehefin_mobile
 
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,11 +20,13 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.example.ehefin_mobile.core.datastore.TokenManager
 import com.example.ehefin_mobile.core.designsystem.theme.EheFinTheme
+import com.example.ehefin_mobile.core.security.RootDetector
 import com.example.ehefin_mobile.navigation.EheFinNavGraph
 import com.example.ehefin_mobile.navigation.MainScreenWrapper
 import com.example.ehefin_mobile.navigation.Screen
 import dagger.hilt.android.AndroidEntryPoint
 import android.Manifest
+import android.util.Log
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -37,6 +41,16 @@ class MainActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Security: Prevent screen capture, screenshot, and screen recording
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
+        
+        // Security: Check for rooted device
+        checkRootedDevice()
+        
         askNotificationPermission()
 
         enableEdgeToEdge()
@@ -58,6 +72,33 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+    
+    /**
+     * Check if device is rooted and show warning dialog
+     */
+    private fun checkRootedDevice() {
+        if (RootDetector.isDeviceRooted(this)) {
+            Log.w("Security", "Rooted device detected!")
+            Log.w("Security", RootDetector.getDetectionDetails(this).toString())
+            
+            AlertDialog.Builder(this)
+                .setTitle("Peringatan Keamanan")
+                .setMessage(
+                    "Perangkat Anda terdeteksi sudah di-root. " +
+                    "Menggunakan aplikasi ini pada perangkat yang di-root " +
+                    "dapat menimbulkan risiko keamanan terhadap data finansial Anda.\n\n" +
+                    "Kami sangat menyarankan untuk menggunakan perangkat yang tidak di-root."
+                )
+                .setCancelable(false)
+                .setPositiveButton("Keluar") { _, _ ->
+                    finish()
+                }
+                .setNegativeButton("Lanjutkan dengan Risiko") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
     }
 

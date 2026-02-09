@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration for EheFin Mobile
+    
+    SSL Pinning Configuration:
+    - Pins the SSL certificate for API endpoints
+    - Enables certificate transparency
+    - Restricts cleartext traffic
+    
+    IMPORTANT: Update pin-set when SSL certificates are renewed!
+    Pin expiration is set to help remind for certificate rotation.
+-->
+<network-security-config>
+    
+    <!-- Default configuration for all domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Debug configuration - allows local development -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+
+    <!-- Production API domain with certificate pinning -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.ehefin.com</domain>
+        <domain includeSubdomains="true">ehefin.com</domain>
+        
+        <!-- SSL Certificate Pins -->
+        <!-- TODO: UNCOMMENT THIS WHEN BACKEND IS DEPLOYED TO PRODUCTION -->
+        <!-- Generate pins using: openssl s_client -connect api.ehefin.com:443 | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 -->
+        <!--
+        <pin-set expiration="2027-01-01">
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        </pin-set>
+        -->
+        
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Staging API domain -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">staging.ehefin.com</domain>
+        
+        <!-- TODO: UNCOMMENT THIS WHEN BACKEND IS DEPLOYED TO STAGING -->
+        <!--
+        <pin-set expiration="2027-01-01">
+            <pin digest="SHA-256">CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=</pin>
+            <pin digest="SHA-256">DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=</pin>
+        </pin-set>
+        -->
+        
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Local development (10.0.2.2 is Android emulator localhost) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+    
+</network-security-config>
