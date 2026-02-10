@@ -8,6 +8,7 @@ import com.example.ehefin_mobile.feature.plafond.domain.model.UserPlafond
 import com.example.ehefin_mobile.feature.plafond.domain.usecase.GetPlafondUseCase
 import com.example.ehefin_mobile.feature.plafond.domain.usecase.GetProductsUseCase
 import com.example.ehefin_mobile.feature.plafond.domain.usecase.SelectPlafondUseCase
+import com.example.ehefin_mobile.feature.profile.domain.usecase.GetProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +24,9 @@ data class PlafondUiState(
         val activePlafond: UserPlafond? = null,
         val products: List<Product> = emptyList(),
         val error: String? = null,
-        val isSelectingPlafond: Boolean = false
+        val isSelectingPlafond: Boolean = false,
+        val isProfileComplete: Boolean = false,
+        val showIncompleteProfileDialog: Boolean = false
 )
 
 sealed class PlafondEvent {
@@ -37,7 +40,8 @@ class PlafondViewModel
 constructor(
         private val getPlafondUseCase: GetPlafondUseCase,
         private val getProductsUseCase: GetProductsUseCase,
-        private val selectPlafondUseCase: SelectPlafondUseCase
+        private val selectPlafondUseCase: SelectPlafondUseCase,
+        private val getProfileUseCase: GetProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlafondUiState())
@@ -49,6 +53,7 @@ constructor(
     init {
         loadPlafond()
         loadProducts()
+        checkProfileStatus()
     }
 
     fun loadPlafond() {
@@ -98,7 +103,21 @@ constructor(
         }
     }
 
+    private fun checkProfileStatus() {
+        viewModelScope.launch {
+            getProfileUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _uiState.update { it.copy(isProfileComplete = result.data?.isComplete == true) }
+                }
+            }
+        }
+    }
+
     fun selectPlafond(productId: Long) {
+        if (!_uiState.value.isProfileComplete) {
+            _uiState.update { it.copy(showIncompleteProfileDialog = true) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isSelectingPlafond = true, error = null) }
 
@@ -125,5 +144,9 @@ constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun dismissIncompleteProfileDialog() {
+        _uiState.update { it.copy(showIncompleteProfileDialog = false) }
     }
 }

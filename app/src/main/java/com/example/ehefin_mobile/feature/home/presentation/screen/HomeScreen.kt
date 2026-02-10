@@ -1,5 +1,6 @@
 package com.example.ehefin_mobile.feature.home.presentation.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -46,6 +48,8 @@ import com.example.ehefin_mobile.core.common.toCurrencyFormat
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
 import androidx.compose.material.icons.filled.Lock
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.HorizontalDivider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,11 +57,14 @@ fun HomeScreen(
     isLoggedIn: Boolean,
     onNavigateToPlafond: () -> Unit,
     onNavigateToSubmitLoan: () -> Unit,
+    onNavigateToHistory: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onLogout: () -> Unit,
     authViewModel: AuthViewModel = hiltViewModel(),
     plafondViewModel: com.example.ehefin_mobile.feature.plafond.presentation.PlafondViewModel = hiltViewModel()
 ) {
     val plafondState by plafondViewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
 
     // Listen for logout success event (only if logged in)
     LaunchedEffect(Unit) {
@@ -76,221 +83,235 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "EheFin",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        )
+                    }
                 },
                 actions = {
-                    TextButton(
-                        onClick = {
-                            if (isLoggedIn) {
-                                authViewModel.logout()
-                            } else {
-                                onLogout() // Acts as navigate to login
-                            }
-                        }
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
-                                contentDescription = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login_button),
-                                style = MaterialTheme.typography.labelMedium
-                            )
-                        }
+                    IconButton(onClick = { 
+                        if (isLoggedIn) authViewModel.logout() else onLogout() 
+                    }) {
+                        Icon(
+                            imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
+                            contentDescription = if (isLoggedIn) "Keluar" else "Masuk",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNavigateToSubmitLoan,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.apply_loan),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .verticalScroll(scrollState)
+                .padding(horizontal = 20.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Welcome Section
-            Text(
-                text = if (isLoggedIn) stringResource(R.string.login_title) else stringResource(R.string.home_welcome_guest),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Text(
-                text = if (isLoggedIn) stringResource(R.string.home_manage_loans) else stringResource(R.string.home_login_prompt),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Dashboard Cards
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+            // 1. Greeting & Header
+            Column {
+                Text(
+                    text = if (isLoggedIn) "Halo, Selamat Datang!" else "Selamat Datang di EheFin",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    if (!isLoggedIn) {
-                         Text(
-                            text = stringResource(R.string.home_restricted_access),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.home_login_now),
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                             text = stringResource(R.string.home_login_benefit),
-                             style = MaterialTheme.typography.bodyMedium,
-                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        androidx.compose.material3.Button(
-                            onClick = onLogout, // Navigate to Login
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.home_login_register))
-                        }
-                    } else {
-                        val activePlafond = plafondState.activePlafond
-                        if (activePlafond != null) {
-                            Text(
-                                text = stringResource(R.string.available_limit),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = activePlafond.remainingAmount.toCurrencyFormat(),
-                                style = MaterialTheme.typography.displaySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            androidx.compose.material3.Button(
-                                onClick = onNavigateToPlafond,
-                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                Text(text = stringResource(R.string.home_check_plafond))
-                            }
-                        } else {
-                            Text(
-                                text = stringResource(R.string.home_no_limit),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(R.string.apply_plafond),
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                 text = stringResource(R.string.home_apply_plafond_desc),
-                                 style = MaterialTheme.typography.bodyMedium,
-                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            androidx.compose.material3.Button(
-                                onClick = onNavigateToPlafond,
-                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                Text(text = stringResource(R.string.select_plafond))
-                            }
-                        }
-                    }
+                Text(
+                    text = if (isLoggedIn) "Kelola keuanganmu dengan bijak hari ini." else "Solusi finansial terbaik untuk kebutuhanmu.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // 2. Hero Section (Credit Card Style)
+            if (!isLoggedIn) {
+                GuestHeroCard(onLoginClick = onLogout)
+            } else {
+                val activePlafond = plafondState.activePlafond
+                if (activePlafond != null) {
+                    ActiveLimitCard(
+                        balance = activePlafond.remainingAmount,
+                        limit = activePlafond.originalAmount,
+                        onDetailClick = onNavigateToPlafond
+                    )
+                } else {
+                    ActivateLimitCard(onActivateClick = onNavigateToPlafond)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = stringResource(R.string.quick_menu),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // If guest, actions are restricted by NavGraph, but we can also visually indicate lock?
-                // For now keeping same UI, NavGraph handles redirection.
-                HomeMenuItem(
-                    icon = Icons.Default.Add,
-                    title = stringResource(R.string.home_apply_loan_menu),
-                    onClick = onNavigateToSubmitLoan,
-                    modifier = Modifier.weight(1f)
+            // 3. Quick Actions Grid
+            Column {
+                Text(
+                    text = "Akses Cepat",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
-                 // Placeholder for another action or just keep one primary action
-                 Spacer(modifier = Modifier.weight(1f))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    QuickActionItem(
+                        icon = Icons.Default.Add,
+                        label = "Pinjaman",
+                        onClick = onNavigateToSubmitLoan,
+                        enabled = isLoggedIn
+                    )
+                    QuickActionItem(
+                        icon = Icons.Default.CreditCard,
+                        label = "Plafond",
+                        onClick = onNavigateToPlafond,
+                        enabled = isLoggedIn
+                    )
+                    QuickActionItem(
+                        icon = Icons.Default.History,
+                        label = "Riwayat",
+                        onClick = onNavigateToHistory,
+                        enabled = isLoggedIn
+                    )
+                    QuickActionItem(
+                        icon = Icons.Default.Person,
+                        label = "Profil",
+                        onClick = onNavigateToProfile,
+                        enabled = isLoggedIn
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // 4. Promo / Tips Banner
+            SpecialOfferBanner()
+            
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
 
-            // Info Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+@Composable
+fun GuestHeroCard(onLoginClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Masuk untuk Akses Penuh",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            Text(
+                text = "Nikmati kemudahan akses finansial dalam genggamanmu.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            androidx.compose.material3.Button(
+                onClick = onLoginClick,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
+                Text(text = "Masuk / Daftar Sekarang", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+fun ActiveLimitCard(balance: Double, limit: Double, onDetailClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        androidx.compose.foundation.layout.Box {
+            // Background decoration (circles)
+            // You could allow for canvas drawing here for more complex patterns
+            
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Row(
+                   modifier = Modifier.fillMaxWidth(),
+                   horizontalArrangement = Arrangement.SpaceBetween,
+                   verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.home_tips_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        text = "Sisa Limit Tersedia",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.home_tips_content),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = balance.toCurrencyFormat(),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Total Limit",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = limit.toCurrencyFormat(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                        )
+                    }
+                    
+                    androidx.compose.material3.Button(
+                        onClick = onDetailClick,
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text("Detail", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
         }
@@ -298,40 +319,133 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeMenuItem(
-    icon: ImageVector,
-    title: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun ActivateLimitCard(onActivateClick: () -> Unit) {
     Card(
-        modifier = modifier.height(120.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+             containerColor = MaterialTheme.colorScheme.primaryContainer 
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Aktifkan Limitmu!",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                     color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Dapatkan limit kredit hingga Rp 50 Juta dengan bunga ringan.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                androidx.compose.material3.Button(
+                    onClick = onActivateClick,
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Ajukan Sekarang")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickActionItem(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(enabled = enabled, onClick = onClick)
+            .width(72.dp)
+    ) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (enabled) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+             modifier = Modifier.size(56.dp)
+        ) {
+            androidx.compose.foundation.layout.Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                 Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+             maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun SpecialOfferBanner() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        onClick = onClick
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Card(
+                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                     shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Promo Spesial",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Ajak Teman dapat Cash Rp 500rb!",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                 Text(
+                    text = "Bagikan kode referralmu sekarang.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+            }
             Icon(
-                imageVector = icon,
+                imageVector = Icons.Default.CardGiftcard,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
     }

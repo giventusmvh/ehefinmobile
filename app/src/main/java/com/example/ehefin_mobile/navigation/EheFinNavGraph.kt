@@ -82,16 +82,27 @@ fun EheFinNavGraph(
                         navController.navigate(Screen.Login.route)
                     }
                 },
+                onNavigateToHistory = {
+                    if (isLoggedIn) {
+                        navController.navigate(Screen.LoanList.route)
+                    } else {
+                        navController.navigate(Screen.Login.route)
+                    }
+                },
+                onNavigateToProfile = {
+                    if (isLoggedIn) {
+                        navController.navigate(Screen.Profile.route)
+                    } else {
+                         navController.navigate(Screen.Login.route)
+                    }
+                },
                 onLogout = {
                     // For guests this acts as Login navigation
                     navController.navigate(Screen.Login.route) {
-                         if (!isLoggedIn) {
-                             // If guest, we just go to login, keep backstack? 
-                             // Usually better to behave like regular nav
-                         } else {
+                        if (isLoggedIn) {
                              // If logout, clear backstack
                              popUpTo(Screen.Home.route) { inclusive = true }
-                         }
+                        }
                     }
                 }
             )

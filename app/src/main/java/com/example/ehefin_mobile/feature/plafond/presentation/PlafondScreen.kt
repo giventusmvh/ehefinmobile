@@ -1,5 +1,7 @@
 package com.example.ehefin_mobile.feature.plafond.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +18,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Percent
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,13 +31,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import com.example.ehefin_mobile.navigation.Screen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,6 +57,8 @@ import com.example.ehefin_mobile.core.common.toCurrencyFormat
 import com.example.ehefin_mobile.feature.plafond.domain.model.Product
 import com.example.ehefin_mobile.feature.plafond.domain.model.UserPlafond
 import kotlinx.coroutines.flow.collectLatest
+
+import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,11 +79,36 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
         }
     }
 
+    if (uiState.showIncompleteProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissIncompleteProfileDialog() },
+            title = { Text("Profile Belum Lengkap") },
+            text = {
+                Text("Mohon lengkapi data diri Anda terlebih dahulu sebelum memilih plafond pinjaman.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.dismissIncompleteProfileDialog()
+                        navController.navigate(Screen.EditProfile.route)
+                    }
+                ) {
+                    Text("Lengkapi Profile")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissIncompleteProfileDialog() }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
+
     Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                        title = { Text("Plafond Saya") },
+                        title = { Text("Plafond Saya", fontWeight = FontWeight.Bold) },
                         navigationIcon = {
                             IconButton(onClick = { navController.navigateUp() }) {
                                 Icon(
@@ -90,20 +126,23 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
             }
         } else {
             LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Active Plafond Section
                 item {
                     Text(
-                            text = "Plafond Aktif",
+                            text = "Status Plafond",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 
                 item {
                     if (uiState.activePlafond != null) {
+                         // Recreating the card style from Home for consistency, or reusing if shared. 
+                         // For now locally defining similar style for simplicity in this file.
                         ActivePlafondCard(plafond = uiState.activePlafond!!)
                     } else {
                         NoPlafondCard()
@@ -114,16 +153,18 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
                 if (uiState.activePlafond == null && uiState.products.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                                text = "Pilih Produk Plafond",
+                        Column {
+                             Text(
+                                text = "Pilihan Produk Plafond",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                                text = "Pilih salah satu produk untuk memulai",
+                            )
+                            Text(
+                                text = "Pilih limit yang sesuai dengan kebutuhanmu",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                            )
+                        }
                     }
 
                     items(uiState.products) { product ->
@@ -138,52 +179,111 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
         }
     }
 }
-// ... (ActivePlafondCard and NoPlafondCard remain mostly unchanged as they used standard Card)
 
 @Composable
 fun ProductCard(product: Product, isSelecting: Boolean, onSelect: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                    text = "Limit: ${product.amount.toCurrencyFormat()}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !isSelecting, onClick = onSelect),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                        text = "Tenor: ${product.tenor} bulan",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                        text = "Bunga: ${product.interestRate}%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(
-                    onClick = onSelect,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isSelecting
-            ) {
-                if (isSelecting) {
-                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                // Left: Product Info
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                } else {
-                    Text("Pilih Produk Ini")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Limit hingga",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = product.amount.toCurrencyFormat(),
+                        style = MaterialTheme.typography.headlineSmall, // Make it big
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                // Right: Action (Arrow or Button)
+                IconButton(
+                    onClick = onSelect,
+                    enabled = !isSelecting,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    if (isSelecting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Pilih"
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Bottom Info Row (Tenor & Interest)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${product.tenor} Bulan",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Percent, // Or similar
+                        contentDescription = null, // Or just text "%"
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                     Text(
+                        text = "${product.interestRate}% / Bulan",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -194,87 +294,99 @@ fun ProductCard(product: Product, isSelecting: Boolean, onSelect: () -> Unit) {
 fun ActivePlafondCard(plafond: UserPlafond) {
     Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp),
             colors =
                     CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
+                            containerColor = MaterialTheme.colorScheme.primary
+                    ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                         imageVector = Icons.Filled.CreditCard,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(28.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                        text = plafond.productName,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        text = "EheFin Priority Card", // Selling name
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Text(
+                text = "Sisa Limit",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+            )
+            
+            Text(
+                text = plafond.remainingAmount.toCurrencyFormat(),
+                style = MaterialTheme.typography.displayMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Progress Bar
-            LinearProgressIndicator(
-                    progress = {
-                        1f - (plafond.remainingAmount / plafond.originalAmount).toFloat()
-                    },
-                    modifier = Modifier.fillMaxWidth().height(12.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = MaterialTheme.colorScheme.surface,
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                            text = "Sisa Plafond",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+            Column {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                     Text(
+                        text = "Terpakai",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
                     Text(
-                            text = plafond.remainingAmount.toCurrencyFormat(),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        text = "${((1f - (plafond.remainingAmount.toFloat() / plafond.originalAmount.toFloat())) * 100).toInt()}%",
+                         style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                            text = "Total Plafond",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    )
-                    Text(
-                            text = plafond.originalAmount.toCurrencyFormat(),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                        progress = {
+                            1f - (plafond.remainingAmount / plafond.originalAmount).toFloat()
+                        },
+                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                        color = MaterialTheme.colorScheme.surface, // White progress
+                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
+                )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
             Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                InfoChip(label = "Tenor", value = "${plafond.tenor} bulan")
-                InfoChip(label = "Bunga", value = "${plafond.interestRate}%")
+                 InfoValueItem("Total Limit", plafond.originalAmount.toCurrencyFormat(), true)
+                 InfoValueItem("Tenor", "${plafond.tenor} Bulan", true)
             }
         }
+    }
+}
+
+@Composable
+fun InfoValueItem(label: String, value: String, isLight: Boolean) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (isLight) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = if (isLight) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -282,53 +394,35 @@ fun ActivePlafondCard(plafond: UserPlafond) {
 fun NoPlafondCard() {
     Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(24.dp),
             colors =
                     CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
     ) {
         Column(
                 modifier = Modifier.fillMaxWidth().padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.Start
         ) {
             Icon(
                     imageVector = Icons.Filled.CreditCard,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                    text = "Belum Ada Plafond",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "Plafond Belum Aktif",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                    text = "Pilih produk plafond di bawah untuk memulai",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center
+                    text = "Segera aktifkan plafond untuk mulai mengajukan pinjaman.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
             )
         }
-    }
-}
-
-
-
-@Composable
-fun InfoChip(label: String, value: String) {
-    Column {
-        Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-        )
-        Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
     }
 }

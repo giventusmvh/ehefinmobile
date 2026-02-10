@@ -72,6 +72,7 @@ import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.ehefin_mobile.core.util.ImageCompressionUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,12 +145,13 @@ fun EditProfileScreen(
             activeUploadType?.let { type ->
                 val file = uriToFile(context, selectedUri)
                 if (file != null) {
+                    val compressedFile = ImageCompressionUtil.compressImage(context, file)
                     when (type) {
-                        "KTP" -> ktpFile = file
-                        "KK" -> kkFile = file
-                        "NPWP" -> npwpFile = file
-                        "SELFIE" -> selfieFile = file
-                        "SALARY_SLIP" -> salarySlipFile = file
+                        "KTP" -> ktpFile = compressedFile
+                        "KK" -> kkFile = compressedFile
+                        "NPWP" -> npwpFile = compressedFile
+                        "SELFIE" -> selfieFile = compressedFile
+                        "SALARY_SLIP" -> salarySlipFile = compressedFile
                     }
                 }
             }
@@ -162,13 +164,14 @@ fun EditProfileScreen(
     ) { success ->
         if (success) {
             pendingCameraFile?.let { file ->
+                val compressedFile = ImageCompressionUtil.compressImage(context, file)
                 activeUploadType?.let { type ->
                     when (type) {
-                        "KTP" -> ktpFile = file
-                        "KK" -> kkFile = file
-                        "NPWP" -> npwpFile = file
-                        "SELFIE" -> selfieFile = file
-                        "SALARY_SLIP" -> salarySlipFile = file
+                        "KTP" -> ktpFile = compressedFile
+                        "KK" -> kkFile = compressedFile
+                        "NPWP" -> npwpFile = compressedFile
+                        "SELFIE" -> selfieFile = compressedFile
+                        "SALARY_SLIP" -> salarySlipFile = compressedFile
                     }
                 }
             }
@@ -252,7 +255,21 @@ fun EditProfileScreen(
     }
 
     // Date Picker Dialog
-    val datePickerState = rememberDatePickerState()
+    // Calculate max date (18 years ago)
+    val maxDateMillis = remember {
+        val calendar = java.util.Calendar.getInstance()
+        calendar.add(java.util.Calendar.YEAR, -18)
+        calendar.timeInMillis
+    }
+
+    val datePickerState = rememberDatePickerState(
+        initialDisplayedMonthMillis = maxDateMillis,
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis <= maxDateMillis
+            }
+        }
+    )
     var showDatePicker by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
