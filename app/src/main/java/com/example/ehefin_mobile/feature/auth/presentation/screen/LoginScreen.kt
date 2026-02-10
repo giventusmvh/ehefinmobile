@@ -133,13 +133,8 @@ fun LoginScreen(
                  viewModel.setErrorMessage("Google Sign-In failed: ID Token is null")
             }
         } catch (e: ApiException) {
-            Log.e("GoogleSignIn", "Sign-in failed code=${e.statusCode}", e)
-            val errorMsg = when(e.statusCode) {
-                10 -> "Configuration Error (SHA-1). Check Console."
-                12500 -> "Update Google Play Services."
-                else -> "Google Sign-In Failed: Code ${e.statusCode}"
-            }
-            viewModel.setErrorMessage(errorMsg)
+            Log.e("GoogleSignIn", "Sign-in failed code=${e.statusCode} msg=${e.message}", e)
+            viewModel.setErrorMessage("Google Error: code=${e.statusCode}, ${e.message}")
         }
     }
 
