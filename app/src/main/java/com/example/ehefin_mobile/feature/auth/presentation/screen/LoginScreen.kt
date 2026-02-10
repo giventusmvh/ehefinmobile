@@ -100,38 +100,46 @@ fun LoginScreen(
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account?.idToken
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val idToken = account?.idToken
 
-                if (idToken != null) {
-                    // Authenticate with Firebase
-                    val credential = GoogleAuthProvider.getCredential(idToken, null)
-                    FirebaseAuth.getInstance().signInWithCredential(credential)
-                        .addOnSuccessListener { authResult ->
-                            // Get Firebase ID Token
-                            authResult.user?.getIdToken(false)
-                                ?.addOnSuccessListener { tokenResult ->
-                                    val firebaseToken = tokenResult.token
-                                    if (firebaseToken != null) {
-                                        viewModel.loginWithFirebase(firebaseToken)
-                                    } else {
-                                        viewModel.clearError()
-                                    }
+            if (idToken != null) {
+                // Authenticate with Firebase
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                FirebaseAuth.getInstance().signInWithCredential(credential)
+                    .addOnSuccessListener { authResult ->
+                        // Get Firebase ID Token
+                        authResult.user?.getIdToken(false)
+                            ?.addOnSuccessListener { tokenResult ->
+                                val firebaseToken = tokenResult.token
+                                if (firebaseToken != null) {
+                                    viewModel.loginWithFirebase(firebaseToken)
+                                } else {
+                                    viewModel.setErrorMessage("Failed to get instance ID token")
                                 }
-                                ?.addOnFailureListener { e ->
-                                    Log.e("FirebaseAuth", "Failed to get ID token", e)
-                                }
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("FirebaseAuth", "Firebase auth failed", e)
-                        }
-                }
-            } catch (e: ApiException) {
-                Log.e("GoogleSignIn", "Sign-in failed", e)
+                            }
+                            ?.addOnFailureListener { e ->
+                                Log.e("FirebaseAuth", "Failed to get ID token", e)
+                                viewModel.setErrorMessage("Auth Error: ${e.message}")
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("FirebaseAuth", "Firebase auth failed", e)
+                        viewModel.setErrorMessage("Firebase Auth Failed: ${e.message}")
+                    }
+            } else {
+                 viewModel.setErrorMessage("Google Sign-In failed: ID Token is null")
             }
+        } catch (e: ApiException) {
+            Log.e("GoogleSignIn", "Sign-in failed code=${e.statusCode}", e)
+            val errorMsg = when(e.statusCode) {
+                10 -> "Configuration Error (SHA-1). Check Console."
+                12500 -> "Update Google Play Services."
+                else -> "Google Sign-In Failed: Code ${e.statusCode}"
+            }
+            viewModel.setErrorMessage(errorMsg)
         }
     }
 
