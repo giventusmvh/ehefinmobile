@@ -26,10 +26,21 @@ android {
         buildConfigField("String", "BASE_URL_PRODUCTION", "\"https://api.ehefin.com/api/\"")
     }
 
+    signingConfigs {
+        create("release") {
+            // Using debug keystore for release build to allow testing with same SHA-1
+            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
             buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
+            signingConfig = signingConfigs.getByName("debug")
         }
         release {
             isMinifyEnabled = true
@@ -40,6 +51,10 @@ android {
             )
             // Using the IP for now since there's no domain/SSL yet
             buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
+            
+            // Use the same signing config as debug to ensure Google Sign-In works
+            // independently of build variant for now.
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
