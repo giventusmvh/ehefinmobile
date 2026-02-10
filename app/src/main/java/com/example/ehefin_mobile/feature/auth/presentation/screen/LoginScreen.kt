@@ -140,8 +140,12 @@ fun LoginScreen(
 
     // Google Sign-In function
     fun signInWithGoogle() {
+        // Use auto-generated resource from google-services.json instead of hardcoded value
+        val webClientId = context.getString(R.string.default_web_client_id)
+        Log.d("GoogleSignIn", "Using webClientId: $webClientId")
+        
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(GoogleSignInHelper.DEFAULT_WEB_CLIENT_ID)
+            .requestIdToken(webClientId)
             .requestEmail()
             .build()
 
