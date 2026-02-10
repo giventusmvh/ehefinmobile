@@ -100,52 +100,45 @@ fun LoginScreen(
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val idToken = account?.idToken
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
 
-            if (idToken != null) {
-                // Authenticate with Firebase
-                val credential = GoogleAuthProvider.getCredential(idToken, null)
-                FirebaseAuth.getInstance().signInWithCredential(credential)
-                    .addOnSuccessListener { authResult ->
-                        // Get Firebase ID Token
-                        authResult.user?.getIdToken(false)
-                            ?.addOnSuccessListener { tokenResult ->
-                                val firebaseToken = tokenResult.token
-                                if (firebaseToken != null) {
-                                    viewModel.loginWithFirebase(firebaseToken)
-                                } else {
-                                    viewModel.setErrorMessage("Failed to get instance ID token")
+                if (idToken != null) {
+                    // Authenticate with Firebase
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    FirebaseAuth.getInstance().signInWithCredential(credential)
+                        .addOnSuccessListener { authResult ->
+                            // Get Firebase ID Token
+                            authResult.user?.getIdToken(false)
+                                ?.addOnSuccessListener { tokenResult ->
+                                    val firebaseToken = tokenResult.token
+                                    if (firebaseToken != null) {
+                                        viewModel.loginWithFirebase(firebaseToken)
+                                    } else {
+                                        viewModel.clearError()
+                                    }
                                 }
-                            }
-                            ?.addOnFailureListener { e ->
-                                Log.e("FirebaseAuth", "Failed to get ID token", e)
-                                viewModel.setErrorMessage("Auth Error: ${e.message}")
-                            }
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("FirebaseAuth", "Firebase auth failed", e)
-                        viewModel.setErrorMessage("Firebase Auth Failed: ${e.message}")
-                    }
-            } else {
-                 viewModel.setErrorMessage("Google Sign-In failed: ID Token is null")
+                                ?.addOnFailureListener { e ->
+                                    Log.e("FirebaseAuth", "Failed to get ID token", e)
+                                }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("FirebaseAuth", "Firebase auth failed", e)
+                        }
+                }
+            } catch (e: ApiException) {
+                Log.e("GoogleSignIn", "Sign-in failed", e)
             }
-        } catch (e: ApiException) {
-            Log.e("GoogleSignIn", "Sign-in failed code=${e.statusCode} msg=${e.message}", e)
-            viewModel.setErrorMessage("Google Error: code=${e.statusCode}, ${e.message}")
         }
     }
 
     // Google Sign-In function
     fun signInWithGoogle() {
-        // Use auto-generated resource from google-services.json instead of hardcoded value
-        val webClientId = context.getString(R.string.default_web_client_id)
-        Log.d("GoogleSignIn", "Using webClientId: $webClientId")
-        
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(webClientId)
+            .requestIdToken(GoogleSignInHelper.DEFAULT_WEB_CLIENT_ID)
             .requestEmail()
             .build()
 

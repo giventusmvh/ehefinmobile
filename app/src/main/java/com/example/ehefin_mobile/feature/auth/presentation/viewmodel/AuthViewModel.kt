@@ -113,10 +113,6 @@ class AuthViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
     
-    fun setErrorMessage(message: String) {
-        _uiState.update { it.copy(error = message, isLoading = false) }
-    }
-    
     /**
      * Register FCM token to backend after successful authentication.
      * This enables push notifications for loan status updates.
