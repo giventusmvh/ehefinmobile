@@ -73,7 +73,7 @@ jobs:
         run: |
           mkdir -p $HOME/.android
           echo "$DEBUG_KEYSTORE_BASE64" | base64 --decode > $HOME/.android/debug.keystore
-          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > release.keystore
 
       - name: Build Release APK
         env:
