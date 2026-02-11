@@ -59,7 +59,11 @@
 }
 
 # Keep API interfaces
--keep,allowobfuscation interface com.example.ehefin_mobile.**.api.*Api
+-keep interface com.example.ehefin_mobile.**.data.source.remote.** { *; }
+-keep interface com.example.ehefin_mobile.**.api.** { *; }
+
+# Keep Network Wrappers
+-keep class com.example.ehefin_mobile.core.network.** { *; }
 
 # ============================================
 # Gson Serialization
