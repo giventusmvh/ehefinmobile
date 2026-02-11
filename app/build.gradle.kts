@@ -28,10 +28,24 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            val envKeystorePath = System.getenv("RELEASE_KEYSTORE_PATH")
+            val envKeystorePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            val envKeyAlias = System.getenv("RELEASE_KEY_ALIAS")
+            val envKeyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+
+            if (!envKeystorePath.isNullOrEmpty() && !envKeystorePassword.isNullOrEmpty()) {
+                storeFile = file(envKeystorePath)
+                storePassword = envKeystorePassword
+                keyAlias = envKeyAlias
+                keyPassword = envKeyPassword
+            } else {
+                // Fallback to debug signing for local builds if secrets aren't set
+                val debugConfig = getByName("debug")
+                storeFile = debugConfig.storeFile
+                storePassword = debugConfig.storePassword
+                keyAlias = debugConfig.keyAlias
+                keyPassword = debugConfig.keyPassword
+            }
         }
     }
 
@@ -39,6 +53,7 @@ android {
         debug {
             isMinifyEnabled = false
             buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com\"")
         }
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -50,6 +65,10 @@ android {
             )
             // Using the IP for now since there's no domain/SSL yet
             buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
+            
+            val envClientId = System.getenv("GOOGLE_CLIENT_ID")
+            val clientId = if (!envClientId.isNullOrEmpty()) envClientId else "173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com"
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$clientId\"")
         }
     }
 

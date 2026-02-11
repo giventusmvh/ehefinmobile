@@ -15,7 +15,7 @@ object GoogleSignInHelper {
      * This is the OAuth 2.0 client ID of type 3 (Web client)
      * found in the oauth_client array with client_type: 3
      */
-    const val DEFAULT_WEB_CLIENT_ID = "173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com"
+    const val DEFAULT_WEB_CLIENT_ID = com.example.ehefin_mobile.BuildConfig.GOOGLE_CLIENT_ID
 
     /**
      * Create a Google Sign-In client with the standard configuration
