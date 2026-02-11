@@ -391,7 +391,7 @@ fun EditProfileScreen(
 
             OutlinedTextField(
                 value = accountNumber,
-                onValueChange = { accountNumber = it },
+                onValueChange = { if (it.length <= 20) accountNumber = it },
                 label = { Text(stringResource(R.string.edit_profile_account_number)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()

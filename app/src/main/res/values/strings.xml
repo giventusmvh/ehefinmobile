@@ -157,6 +157,8 @@
     <string name="loan_submitted">Pinjaman berhasil diajukan</string>
     <string name="terms_conditions">Syarat dan Ketentuan</string>
     <string name="agree_terms">Saya menyetujui syarat dan ketentuan</string>
+    <string name="terms_content">Dengan mengajukan pinjaman ini, saya menyatakan bahwa:\n\n1. Semua data yang saya berikan adalah benar dan dapat dipertanggungjawabkan.\n2. Saya bersedia membayar cicilan sesuai dengan tenor dan bunga yang telah disepakati.\n3. Saya memahami bahwa keterlambatan pembayaran dapat dikenakan denda sesuai ketentuan yang berlaku.\n4. Saya menyetujui bahwa pihak EheFin berhak melakukan verifikasi atas data yang saya berikan.\n5. Saya telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku.</string>
+    <string name="terms_must_accept">Anda harus menyetujui syarat dan ketentuan untuk melanjutkan</string>
 
     <!-- Plafond Screen -->
     <string name="plafond_title">Plafond</string>
@@ -270,6 +272,10 @@
     <string name="submit_loan_rate_placeholder">Contoh: 5.5</string>
     <string name="submit_loan_info">* Pengajuan pinjaman akan diproses setelah diverifikasi oleh tim kami.</string>
     <string name="submit_loan_warning">Warning</string>
+    <string name="submit_loan_max_amount_guide">Maks. pinjaman: Rp %1$s (sisa limit Anda)</string>
+    <string name="submit_loan_max_tenor_guide">Maks. tenor: %1$d bulan</string>
+    <string name="submit_loan_amount_exceeds">Jumlah melebihi sisa limit Anda</string>
+    <string name="submit_loan_tenor_exceeds">Tenor melebihi batas maksimal</string>
 
     <!-- Plafond Additional -->
     <string name="plafond_my">Plafond Saya</string>

@@ -53,13 +53,17 @@ data class SubmitLoanUiState(
     val branches: List<Branch> = emptyList(),
     val selectedBranchId: Long? = null,
     val amount: String = "",
+    val amountDisplay: String = "",
     val tenor: String = "",
 
     val interestRate: String = "",
     val latitude: String? = null,
     val longitude: String? = null,
     val error: String? = null,
-    val hasActivePlafond: Boolean? = null
+    val hasActivePlafond: Boolean? = null,
+    val termsAccepted: Boolean = false,
+    val maxAmount: Double? = null,
+    val maxTenor: Int? = null
 )
 
 /**
@@ -241,7 +245,9 @@ class LoanViewModel @Inject constructor(
                             state.copy(
                                 isLoading = false,
                                 hasActivePlafond = isActive,
-                                interestRate = if (isActive) plafond!!.interestRate.toString() else ""
+                                interestRate = if (isActive) plafond!!.interestRate.toString() else "",
+                                maxAmount = if (isActive) plafond!!.remainingAmount else null,
+                                maxTenor = if (isActive) plafond!!.tenor else null
                             )
                         }
                         is Resource.Error -> {
@@ -264,7 +270,18 @@ class LoanViewModel @Inject constructor(
     }
     
     fun onAmountChange(amount: String) {
-        _submitState.update { it.copy(amount = amount, error = null) }
+        // Strip all non-digit characters to get raw value
+        val rawDigits = amount.replace(".", "").replace(",", "").filter { it.isDigit() }
+        // Format with dots as thousand separator
+        val formatted = formatWithThousandSeparator(rawDigits)
+        _submitState.update { it.copy(amount = rawDigits, amountDisplay = formatted, error = null) }
+    }
+
+    private fun formatWithThousandSeparator(value: String): String {
+        if (value.isEmpty()) return ""
+        val reversed = value.reversed()
+        val chunks = reversed.chunked(3)
+        return chunks.joinToString(".").reversed()
     }
     
     fun onTenorChange(tenor: String) {
@@ -273,6 +290,10 @@ class LoanViewModel @Inject constructor(
     
     fun onInterestRateChange(rate: String) {
         _submitState.update { it.copy(interestRate = rate, error = null) }
+    }
+
+    fun onTermsAcceptedChange(accepted: Boolean) {
+        _submitState.update { it.copy(termsAccepted = accepted, error = null) }
     }
     
     fun clearSubmitError() {
@@ -291,15 +312,25 @@ class LoanViewModel @Inject constructor(
             return
         }
         
-        val amount = state.amount.toDoubleOrNull()
+        val amount = state.amount.replace(".", "").toDoubleOrNull()
         if (amount == null || amount <= 0) {
             _submitState.update { it.copy(error = "Jumlah pinjaman tidak valid") }
+            return
+        }
+
+        if (state.maxAmount != null && amount > state.maxAmount) {
+            _submitState.update { it.copy(error = "Jumlah melebihi sisa limit Anda (Rp ${formatWithThousandSeparator(state.maxAmount.toLong().toString())})") }
             return
         }
         
         val tenor = state.tenor.toIntOrNull()
         if (tenor == null || tenor <= 0) {
             _submitState.update { it.copy(error = "Tenor tidak valid") }
+            return
+        }
+
+        if (state.maxTenor != null && tenor > state.maxTenor) {
+            _submitState.update { it.copy(error = "Tenor melebihi batas maksimal (${state.maxTenor} bulan)") }
             return
         }
         
