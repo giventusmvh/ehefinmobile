@@ -49,8 +49,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.ehefin_mobile.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ehefin_mobile.core.common.toCurrencyFormat
@@ -82,9 +84,9 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
     if (uiState.showIncompleteProfileDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissIncompleteProfileDialog() },
-            title = { Text("Profile Belum Lengkap") },
+            title = { Text(stringResource(R.string.plafond_incomplete_title)) },
             text = {
-                Text("Mohon lengkapi data diri Anda terlebih dahulu sebelum memilih plafond pinjaman.")
+                Text(stringResource(R.string.plafond_incomplete_desc))
             },
             confirmButton = {
                 Button(
@@ -93,12 +95,12 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
                         navController.navigate(Screen.EditProfile.route)
                     }
                 ) {
-                    Text("Lengkapi Profile")
+                    Text(stringResource(R.string.plafond_complete_profile))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissIncompleteProfileDialog() }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -108,12 +110,12 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                        title = { Text("Plafond Saya", fontWeight = FontWeight.Bold) },
+                        title = { Text(stringResource(R.string.plafond_my), fontWeight = FontWeight.Bold) },
                         navigationIcon = {
                             IconButton(onClick = { navController.navigateUp() }) {
                                 Icon(
                                         Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Kembali"
+                                        contentDescription = stringResource(R.string.back)
                                 )
                             }
                         }
@@ -132,7 +134,7 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
                 // Active Plafond Section
                 item {
                     Text(
-                            text = "Status Plafond",
+                            text = stringResource(R.string.plafond_status_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -155,12 +157,12 @@ fun PlafondScreen(navController: NavController, viewModel: PlafondViewModel = hi
                         Spacer(modifier = Modifier.height(16.dp))
                         Column {
                              Text(
-                                text = "Pilihan Produk Plafond",
+                                text = stringResource(R.string.plafond_product_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Pilih limit yang sesuai dengan kebutuhanmu",
+                                text = stringResource(R.string.plafond_product_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -206,7 +208,7 @@ fun ProductCard(product: Product, isSelecting: Boolean, onSelect: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Limit hingga",
+                        text = stringResource(R.string.plafond_limit_up_to),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -236,7 +238,7 @@ fun ProductCard(product: Product, isSelecting: Boolean, onSelect: () -> Unit) {
                     } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Pilih"
+                            contentDescription = stringResource(R.string.plafond_select)
                         )
                     }
                 }
@@ -265,7 +267,7 @@ fun ProductCard(product: Product, isSelecting: Boolean, onSelect: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${product.tenor} Bulan",
+                        text = stringResource(R.string.plafond_tenor_format, product.tenor),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -280,7 +282,7 @@ fun ProductCard(product: Product, isSelecting: Boolean, onSelect: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                      Text(
-                        text = "${product.interestRate}% / Bulan",
+                        text = stringResource(R.string.plafond_rate_per_month, product.interestRate.toString()),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -311,7 +313,7 @@ fun ActivePlafondCard(plafond: UserPlafond) {
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                        text = "EheFin Priority Card", // Selling name
+                        text = stringResource(R.string.plafond_priority_card),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.SemiBold
@@ -321,7 +323,7 @@ fun ActivePlafondCard(plafond: UserPlafond) {
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "Sisa Limit",
+                text = stringResource(R.string.plafond_remaining_limit),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
             )
@@ -339,7 +341,7 @@ fun ActivePlafondCard(plafond: UserPlafond) {
             Column {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                      Text(
-                        text = "Terpakai",
+                        text = stringResource(R.string.plafond_used),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
@@ -366,8 +368,8 @@ fun ActivePlafondCard(plafond: UserPlafond) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                 InfoValueItem("Total Limit", plafond.originalAmount.toCurrencyFormat(), true)
-                 InfoValueItem("Tenor", "${plafond.tenor} Bulan", true)
+                 InfoValueItem(stringResource(R.string.plafond_total_limit), plafond.originalAmount.toCurrencyFormat(), true)
+                 InfoValueItem(stringResource(R.string.loan_card_tenor), stringResource(R.string.plafond_tenor_format, plafond.tenor), true)
             }
         }
     }
@@ -412,14 +414,14 @@ fun NoPlafondCard() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                    text = "Plafond Belum Aktif",
+                    text = stringResource(R.string.plafond_not_active),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                    text = "Segera aktifkan plafond untuk mulai mengajukan pinjaman.",
+                    text = stringResource(R.string.plafond_not_active_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
             )

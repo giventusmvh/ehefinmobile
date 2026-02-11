@@ -28,13 +28,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.ehefin_mobile.R
 
 @Composable
 fun EheFinLoadingIndicator(
     modifier: Modifier = Modifier,
-    message: String = "Loading..."
+    message: String? = null
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -51,7 +53,7 @@ fun EheFinLoadingIndicator(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = message,
+                text = message ?: stringResource(R.string.loading_default),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -82,7 +84,7 @@ fun EheFinErrorMessage(
         ) {
             Icon(
                 imageVector = Icons.Default.Error,
-                contentDescription = "Error",
+                contentDescription = stringResource(R.string.error_icon),
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(48.dp)
             )
@@ -99,7 +101,7 @@ fun EheFinErrorMessage(
                     onClick = onRetry,
                     modifier = Modifier.fillMaxWidth(0.6f)
                 ) {
-                    Text("Coba Lagi")
+                    Text(stringResource(R.string.retry))
                 }
             }
         }
@@ -172,7 +174,7 @@ fun EheFinOfflineBanner(
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
-                    text = "Tidak ada koneksi internet",
+                    text = stringResource(R.string.no_internet),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onError
                 )

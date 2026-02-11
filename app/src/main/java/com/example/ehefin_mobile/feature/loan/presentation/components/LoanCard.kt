@@ -19,7 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.core.common.formatToRupiah
 import com.example.ehefin_mobile.core.common.toDisplayDate
 import com.example.ehefin_mobile.feature.loan.domain.model.LoanItem
@@ -52,7 +54,7 @@ fun LoanCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Pinjaman ${loan.productName}",
+                    text = stringResource(R.string.loan_card_title, loan.productName),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -77,31 +79,31 @@ fun LoanCard(
             ) {
                 Column {
                     Text(
-                        text = "Tenor",
+                        text = stringResource(R.string.loan_card_tenor),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "${loan.tenor} bulan",
+                        text = stringResource(R.string.loan_card_tenor_format, loan.tenor),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Column {
                     Text(
-                        text = "Bunga",
+                        text = stringResource(R.string.loan_card_interest),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "${loan.interestRate}%",
+                        text = stringResource(R.string.loan_card_rate_format, loan.interestRate.toString()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Column {
                     Text(
-                        text = "Cabang",
+                        text = stringResource(R.string.loan_card_branch),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -128,7 +130,7 @@ fun LoanCard(
                 )
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "Lihat Detail",
+                    contentDescription = stringResource(R.string.loan_card_view_detail),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

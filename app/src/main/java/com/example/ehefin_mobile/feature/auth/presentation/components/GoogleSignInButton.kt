@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ehefin_mobile.R
@@ -65,7 +66,7 @@ fun GoogleSignInButton(
                 // Google "G" logo
                 Icon(
                     painter = painterResource(id = R.drawable.ic_google_logo),
-                    contentDescription = "Google Logo",
+                    contentDescription = stringResource(R.string.google_logo),
                     modifier = Modifier.size(24.dp),
                     tint = Color.Unspecified
                 )
@@ -73,7 +74,7 @@ fun GoogleSignInButton(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Text(
-                    text = "Masuk dengan Google",
+                    text = stringResource(R.string.google_sign_in),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF1F1F1F)
@@ -101,7 +102,7 @@ fun OrDivider(
         )
 
         Text(
-            text = "atau",
+            text = stringResource(R.string.or),
             modifier = Modifier.padding(horizontal = 16.dp),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant

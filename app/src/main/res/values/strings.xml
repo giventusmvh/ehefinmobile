@@ -197,4 +197,153 @@
     <string name="home_apply_loan_menu">Ajukan\nPinjaman</string>
     <string name="home_tips_title">💡 Tips</string>
     <string name="home_tips_content">Pastikan profil Anda sudah lengkap termasuk foto KTP, KK, dan NPWP untuk mempercepat proses persetujuan pinjaman.</string>
+
+    <!-- Auth - Forgot Password Additional -->
+    <string name="forgot_password_check_email">Cek email anda</string>
+    <string name="forgot_password_reset_title">Reset Password</string>
+    <string name="forgot_password_reset_desc">Masukkan email yang terdaftar akun Anda. Kami akan mengirimkan link untuk mereset password.</string>
+    <string name="forgot_password_email_placeholder">contoh@email.com</string>
+    <string name="forgot_password_send_button">Kirim Link Reset</string>
+
+    <!-- Home Screen Additional -->
+    <string name="home_greeting_logged_in">Halo, Selamat Datang!</string>
+    <string name="home_greeting_guest">Selamat Datang di EheFin</string>
+    <string name="home_subtitle_logged_in">Kelola keuanganmu dengan bijak hari ini.</string>
+    <string name="home_subtitle_guest">Solusi finansial terbaik untuk kebutuhanmu.</string>
+    <string name="home_guest_full_access">Masuk untuk Akses Penuh</string>
+    <string name="home_guest_desc">Nikmati kemudahan akses finansial dalam genggamanmu.</string>
+    <string name="home_guest_login_register">Masuk / Daftar Sekarang</string>
+    <string name="home_remaining_limit">Sisa Limit Tersedia</string>
+    <string name="home_total_limit">Total Limit</string>
+    <string name="home_detail">Detail</string>
+    <string name="home_activate_limit">Aktifkan Limitmu!</string>
+    <string name="home_activate_desc">Dapatkan limit kredit hingga Rp 50 Juta dengan bunga ringan.</string>
+    <string name="home_activate_button">Ajukan Sekarang</string>
+    <string name="home_quick_access">Akses Cepat</string>
+    <string name="home_menu_loan">Pinjaman</string>
+    <string name="home_menu_plafond">Plafond</string>
+    <string name="home_menu_history">Riwayat</string>
+    <string name="home_menu_profile">Profil</string>
+    <string name="home_promo_tag">Promo Spesial</string>
+    <string name="home_promo_title">Ajak Teman dapat Cash Rp 500rb!</string>
+    <string name="home_promo_desc">Bagikan kode referralmu sekarang.</string>
+
+    <!-- Loan Detail Additional -->
+    <string name="loan_detail_loading">Memuat detail pinjaman…</string>
+    <string name="loan_detail_info">Informasi Pinjaman</string>
+    <string name="loan_detail_product">Produk</string>
+    <string name="loan_detail_tenor_format">%1$d bulan</string>
+    <string name="loan_detail_rate_format">%1$s%%</string>
+    <string name="loan_detail_applicant">Data Pemohon</string>
+    <string name="loan_detail_name">Nama</string>
+    <string name="loan_detail_nik">NIK</string>
+    <string name="loan_detail_phone">Telepon</string>
+    <string name="loan_detail_bank_info">Informasi Bank</string>
+    <string name="loan_detail_bank">Bank</string>
+    <string name="loan_detail_account_number">No. Rekening</string>
+    <string name="loan_detail_account_holder">Atas Nama</string>
+    <string name="loan_detail_status_history">Riwayat Status</string>
+    <string name="loan_status_submitted">Pengajuan Diterima</string>
+    <string name="loan_status_marketing_approved">Disetujui Marketing</string>
+    <string name="loan_status_marketing_rejected">Ditolak Marketing</string>
+    <string name="loan_status_bm_approved">Disetujui Kepala Cabang</string>
+    <string name="loan_status_bm_rejected">Ditolak Kepala Cabang</string>
+    <string name="loan_status_disbursed">Pinjaman Disetujui</string>
+    <string name="loan_status_rejected">Pengajuan Ditolak</string>
+
+    <!-- Loan List Additional -->
+    <string name="loan_list_loading">Memuat data pinjaman…</string>
+    <string name="loan_list_empty_title">Belum Ada Pinjaman</string>
+    <string name="loan_list_empty_message">Anda belum memiliki pinjaman. Ajukan pinjaman pertama Anda sekarang!</string>
+
+    <!-- Submit Loan Additional -->
+    <string name="submit_loan_form_title">Formulir Pengajuan</string>
+    <string name="submit_loan_form_desc">Lengkapi data berikut untuk mengajukan pinjaman</string>
+    <string name="submit_loan_success">Pinjaman berhasil diajukan!</string>
+    <string name="submit_loan_no_plafond">Belum Ada Plafond Aktif</string>
+    <string name="submit_loan_no_plafond_desc">Anda belum memiliki plafond atau limit kredit aktif. Silakan ajukan plafond terlebih dahulu.</string>
+    <string name="submit_loan_amount_label">Jumlah Pinjaman (Rp)</string>
+    <string name="submit_loan_amount_placeholder">Contoh: 10000000</string>
+    <string name="submit_loan_tenor_label">Tenor (bulan)</string>
+    <string name="submit_loan_tenor_placeholder">1–48</string>
+    <string name="submit_loan_rate_label">Bunga (%%)</string>
+    <string name="submit_loan_rate_placeholder">Contoh: 5.5</string>
+    <string name="submit_loan_info">* Pengajuan pinjaman akan diproses setelah diverifikasi oleh tim kami.</string>
+    <string name="submit_loan_warning">Warning</string>
+
+    <!-- Plafond Additional -->
+    <string name="plafond_my">Plafond Saya</string>
+    <string name="plafond_status_title">Status Plafond</string>
+    <string name="plafond_priority_card">EheFin Priority Card</string>
+    <string name="plafond_remaining_limit">Sisa Limit</string>
+    <string name="plafond_used">Terpakai</string>
+    <string name="plafond_total_limit">Total Limit</string>
+    <string name="plafond_tenor_format">%1$d Bulan</string>
+    <string name="plafond_not_active">Plafond Belum Aktif</string>
+    <string name="plafond_not_active_desc">Segera aktifkan plafond untuk mulai mengajukan pinjaman.</string>
+    <string name="plafond_product_title">Pilihan Produk Plafond</string>
+    <string name="plafond_product_desc">Pilih limit yang sesuai dengan kebutuhanmu</string>
+    <string name="plafond_limit_up_to">Limit hingga</string>
+    <string name="plafond_rate_per_month">%1$s%% / Bulan</string>
+    <string name="plafond_incomplete_title">Profile Belum Lengkap</string>
+    <string name="plafond_incomplete_desc">Mohon lengkapi data diri Anda terlebih dahulu sebelum memilih plafond pinjaman.</string>
+    <string name="plafond_complete_profile">Lengkapi Profile</string>
+    <string name="plafond_select">Pilih</string>
+
+    <!-- Edit Profile Additional -->
+    <string name="edit_profile_nik">NIK</string>
+    <string name="edit_profile_birthdate">Tanggal Lahir (YYYY-MM-DD)</string>
+    <string name="edit_profile_job">Pekerjaan</string>
+    <string name="edit_profile_company">Nama Perusahaan</string>
+    <string name="edit_profile_phone">Nomor Telepon</string>
+    <string name="edit_profile_address">Alamat Lengkap</string>
+    <string name="edit_profile_bank_section">Info Rekening</string>
+    <string name="edit_profile_bank_name">Nama Bank</string>
+    <string name="edit_profile_account_number">Nomor Rekening</string>
+    <string name="edit_profile_account_holder">Nama Pemilik Rekening</string>
+    <string name="edit_profile_doc_section">Upload Dokumen</string>
+    <string name="edit_profile_ktp">KTP</string>
+    <string name="edit_profile_kk">Kartu Keluarga</string>
+    <string name="edit_profile_npwp">NPWP</string>
+    <string name="edit_profile_selfie">Foto Selfie</string>
+    <string name="edit_profile_salary_slip">Slip Gaji</string>
+    <string name="edit_profile_save">Simpan Profil</string>
+    <string name="edit_profile_saved">Profil berhasil disimpan</string>
+    <string name="edit_profile_camera_permission">Izin kamera diperlukan untuk mengambil foto</string>
+    <string name="edit_profile_image_source">Pilih Sumber Gambar</string>
+    <string name="edit_profile_take_photo">Ambil Foto</string>
+    <string name="edit_profile_take_photo_desc">Gunakan kamera untuk mengambil foto</string>
+    <string name="edit_profile_gallery">Pilih dari Galeri</string>
+    <string name="edit_profile_gallery_desc">Pilih gambar yang sudah ada di perangkat</string>
+    <string name="edit_profile_doc_pending">Siap diupload (simpan untuk mengunggah)</string>
+    <string name="edit_profile_doc_uploaded">Sudah diupload</string>
+    <string name="edit_profile_upload_label">Upload %1$s</string>
+    <string name="edit_profile_preview_label">Preview %1$s</string>
+
+    <!-- Loan Card Component -->
+    <string name="loan_card_title">Pinjaman %1$s</string>
+    <string name="loan_card_tenor">Tenor</string>
+    <string name="loan_card_interest">Bunga</string>
+    <string name="loan_card_branch">Cabang</string>
+    <string name="loan_card_tenor_format">%1$d bulan</string>
+    <string name="loan_card_rate_format">%1$s%%</string>
+    <string name="loan_card_view_detail">Lihat Detail</string>
+
+    <!-- Loan Status Badge -->
+    <string name="status_badge_submitted">Diajukan</string>
+    <string name="status_badge_marketing_review">Review Marketing</string>
+    <string name="status_badge_marketing_rejected">Ditolak Marketing</string>
+    <string name="status_badge_bm_review">Review BM</string>
+    <string name="status_badge_bm_rejected">Ditolak BM</string>
+    <string name="status_badge_approved">Disetujui</string>
+    <string name="status_badge_rejected">Ditolak</string>
+
+    <!-- Google Sign In -->
+    <string name="google_logo">Google Logo</string>
+    <string name="google_sign_in">Masuk dengan Google</string>
+
+    <!-- Common States -->
+    <string name="loading_default">Loading…</string>
+    <string name="error_icon">Error</string>
+    <string name="ok">OK</string>
 </resources>

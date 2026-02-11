@@ -51,8 +51,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.ehefin_mobile.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ehefin_mobile.core.common.formatToRupiah
 import com.example.ehefin_mobile.core.common.toDisplayDate
@@ -91,12 +93,12 @@ fun LoanDetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Detail Pinjaman") },
+                title = { Text(stringResource(R.string.loan_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -110,7 +112,7 @@ fun LoanDetailScreen(
     ) { paddingValues ->
         if (state.isLoading && state.loan == null) {
             EheFinLoadingIndicator(
-                message = "Memuat detail pinjaman...",
+                message = stringResource(R.string.loan_detail_loading),
                 modifier = Modifier.padding(paddingValues)
             )
         } else {
@@ -129,36 +131,36 @@ fun LoanDetailScreen(
 
                     // Sections
                     InfoSection(
-                        title = "Informasi Pinjaman",
+                        title = stringResource(R.string.loan_detail_info),
                         icon = Icons.Default.Info
                     ) {
-                        InfoRow("Produk", loan.productName)
-                        InfoRow("Cabang", loan.branchName)
-                        InfoRow("Tenor", "${loan.requestedTenor} bulan")
-                        InfoRow("Suku Bunga", "${loan.requestedRate}%")
+                        InfoRow(stringResource(R.string.loan_detail_product), loan.productName)
+                        InfoRow(stringResource(R.string.select_branch), loan.branchName)
+                        InfoRow(stringResource(R.string.loan_card_tenor), stringResource(R.string.loan_detail_tenor_format, loan.requestedTenor))
+                        InfoRow(stringResource(R.string.loan_card_interest), stringResource(R.string.loan_detail_rate_format, loan.requestedRate.toString()))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     InfoSection(
-                        title = "Data Pemohon",
+                        title = stringResource(R.string.loan_detail_applicant),
                         icon = Icons.Default.Person
                     ) {
-                        InfoRow("Nama", loan.customerName)
-                        InfoRow("Email", loan.customerEmail)
-                        loan.customerNik?.let { InfoRow("NIK", it) }
-                        loan.customerPhone?.let { InfoRow("Telepon", it) }
+                        InfoRow(stringResource(R.string.loan_detail_name), loan.customerName)
+                        InfoRow(stringResource(R.string.label_email), loan.customerEmail)
+                        loan.customerNik?.let { InfoRow(stringResource(R.string.loan_detail_nik), it) }
+                        loan.customerPhone?.let { InfoRow(stringResource(R.string.loan_detail_phone), it) }
                     }
 
                     if (loan.customerBankName != null) {
                         Spacer(modifier = Modifier.height(16.dp))
                         InfoSection(
-                            title = "Informasi Bank",
+                            title = stringResource(R.string.loan_detail_bank_info),
                             icon = Icons.Default.AccountBalance
                         ) {
-                            InfoRow("Bank", loan.customerBankName)
-                            loan.customerAccountNumber?.let { InfoRow("No. Rekening", it) }
-                            loan.customerAccountHolderName?.let { InfoRow("Atas Nama", it) }
+                            InfoRow(stringResource(R.string.loan_detail_bank), loan.customerBankName)
+                            loan.customerAccountNumber?.let { InfoRow(stringResource(R.string.loan_detail_account_number), it) }
+                            loan.customerAccountHolderName?.let { InfoRow(stringResource(R.string.loan_detail_account_holder), it) }
                         }
                     }
 
@@ -166,7 +168,7 @@ fun LoanDetailScreen(
                     if (state.history.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            text = "Riwayat Status",
+                            text = stringResource(R.string.loan_detail_status_history),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 12.dp)
@@ -206,7 +208,7 @@ fun LoanHeaderSection(loan: LoanApplication) {
             LoanStatusBadge(status = loan.status)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Jumlah Pinjaman",
+                text = stringResource(R.string.loan_amount),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
             )
@@ -425,14 +427,15 @@ fun TimelineItem(
 }
 
 // Helper to get consistent display name
+@Composable
 fun getStatusDisplayName(status: LoanStatus): String {
     return when (status) {
-        LoanStatus.SUBMITTED -> "Pengajuan Diterima"
-        LoanStatus.MARKETING_APPROVED -> "Disetujui Marketing"
-        LoanStatus.MARKETING_REJECTED -> "Ditolak Marketing"
-        LoanStatus.BRANCH_MANAGER_APPROVED -> "Disetujui Kepala Cabang"
-        LoanStatus.BRANCH_MANAGER_REJECTED -> "Ditolak Kepala Cabang"
-        LoanStatus.DISBURSED -> "Pinjaman Disetujui"
-        LoanStatus.REJECTED -> "Pengajuan Ditolak"
+        LoanStatus.SUBMITTED -> stringResource(R.string.loan_status_submitted)
+        LoanStatus.MARKETING_APPROVED -> stringResource(R.string.loan_status_marketing_approved)
+        LoanStatus.MARKETING_REJECTED -> stringResource(R.string.loan_status_marketing_rejected)
+        LoanStatus.BRANCH_MANAGER_APPROVED -> stringResource(R.string.loan_status_bm_approved)
+        LoanStatus.BRANCH_MANAGER_REJECTED -> stringResource(R.string.loan_status_bm_rejected)
+        LoanStatus.DISBURSED -> stringResource(R.string.loan_status_disbursed)
+        LoanStatus.REJECTED -> stringResource(R.string.loan_status_rejected)
     }
 }

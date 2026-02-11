@@ -58,8 +58,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.ehefin_mobile.R
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -125,7 +127,7 @@ fun EditProfileScreen(
 
     LaunchedEffect(uiState.updateSuccess) {
         if (uiState.updateSuccess) {
-            snackbarHostState.showSnackbar("Profil berhasil disimpan")
+            snackbarHostState.showSnackbar(context.getString(R.string.edit_profile_saved))
             navController.navigateUp()
         }
     }
@@ -197,7 +199,7 @@ fun EditProfileScreen(
             cameraLauncher.launch(uri)
         } else {
             scope.launch {
-                snackbarHostState.showSnackbar("Izin kamera diperlukan untuk mengambil foto")
+                snackbarHostState.showSnackbar(context.getString(R.string.edit_profile_camera_permission))
             }
         }
     }
@@ -284,12 +286,12 @@ fun EditProfileScreen(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {
@@ -300,10 +302,10 @@ fun EditProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profil") },
+                title = { Text(stringResource(R.string.edit_profile)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -322,7 +324,7 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = nik,
                 onValueChange = { if (it.length <= 16) nik = it },
-                label = { Text("NIK") },
+                label = { Text(stringResource(R.string.edit_profile_nik)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -332,11 +334,11 @@ fun EditProfileScreen(
                     value = birthdate,
                     onValueChange = { },
                     readOnly = true,
-                    label = { Text("Tanggal Lahir (YYYY-MM-DD)") },
+                    label = { Text(stringResource(R.string.edit_profile_birthdate)) },
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.DateRange,
-                            contentDescription = "Pilih Tanggal"
+                            contentDescription = stringResource(R.string.select_date)
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -351,21 +353,21 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = job,
                 onValueChange = { job = it },
-                label = { Text("Pekerjaan") },
+                label = { Text(stringResource(R.string.edit_profile_job)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = companyName,
                 onValueChange = { companyName = it },
-                label = { Text("Nama Perusahaan") },
+                label = { Text(stringResource(R.string.edit_profile_company)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
-                label = { Text("Nomor Telepon") },
+                label = { Text(stringResource(R.string.edit_profile_phone)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -373,24 +375,24 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
-                label = { Text("Alamat Lengkap") },
+                label = { Text(stringResource(R.string.edit_profile_address)) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 3
             )
 
-            SectionHeader(title = "Info Rekening")
+            SectionHeader(title = stringResource(R.string.edit_profile_bank_section))
 
             OutlinedTextField(
                 value = bankName,
                 onValueChange = { bankName = it },
-                label = { Text("Nama Bank") },
+                label = { Text(stringResource(R.string.edit_profile_bank_name)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = accountNumber,
                 onValueChange = { accountNumber = it },
-                label = { Text("Nomor Rekening") },
+                label = { Text(stringResource(R.string.edit_profile_account_number)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -398,14 +400,14 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = accountHolderName,
                 onValueChange = { accountHolderName = it },
-                label = { Text("Nama Pemilik Rekening") },
+                label = { Text(stringResource(R.string.edit_profile_account_holder)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            SectionHeader(title = "Upload Dokumen")
+            SectionHeader(title = stringResource(R.string.edit_profile_doc_section))
 
             DocumentUploadItem(
-                label = "KTP",
+                label = stringResource(R.string.edit_profile_ktp),
                 isUploaded = ktpFile != null || !uiState.profile?.ktpPath.isNullOrEmpty(),
                 isPending = ktpFile != null,
                 file = ktpFile,
@@ -415,7 +417,7 @@ fun EditProfileScreen(
             )
 
             DocumentUploadItem(
-                label = "Kartu Keluarga",
+                label = stringResource(R.string.edit_profile_kk),
                 isUploaded = kkFile != null || !uiState.profile?.kkPath.isNullOrEmpty(),
                 isPending = kkFile != null,
                 file = kkFile,
@@ -425,7 +427,7 @@ fun EditProfileScreen(
             )
 
             DocumentUploadItem(
-                label = "NPWP",
+                label = stringResource(R.string.edit_profile_npwp),
                 isUploaded = npwpFile != null || !uiState.profile?.npwpPath.isNullOrEmpty(),
                 isPending = npwpFile != null,
                 file = npwpFile,
@@ -435,7 +437,7 @@ fun EditProfileScreen(
             )
 
             DocumentUploadItem(
-                label = "Foto Selfie",
+                label = stringResource(R.string.edit_profile_selfie),
                 isUploaded = selfieFile != null || !uiState.profile?.selfiePath.isNullOrEmpty(),
                 isPending = selfieFile != null,
                 file = selfieFile,
@@ -445,7 +447,7 @@ fun EditProfileScreen(
             )
 
             DocumentUploadItem(
-                label = "Slip Gaji",
+                label = stringResource(R.string.edit_profile_salary_slip),
                 isUploaded = salarySlipFile != null || !uiState.profile?.salarySlipPath.isNullOrEmpty(),
                 isPending = salarySlipFile != null,
                 file = salarySlipFile,
@@ -494,7 +496,7 @@ fun EditProfileScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    Text("Simpan Profil")
+                    Text(stringResource(R.string.edit_profile_save))
                 }
             }
         }
@@ -513,7 +515,7 @@ fun ImageSourcePickerSheet(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "Pilih Sumber Gambar",
+            text = stringResource(R.string.edit_profile_image_source),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -534,11 +536,11 @@ fun ImageSourcePickerSheet(
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = "Ambil Foto",
+                    text = stringResource(R.string.edit_profile_take_photo),
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
-                    text = "Gunakan kamera untuk mengambil foto",
+                    text = stringResource(R.string.edit_profile_take_photo_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -563,11 +565,11 @@ fun ImageSourcePickerSheet(
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = "Pilih dari Galeri",
+                    text = stringResource(R.string.edit_profile_gallery),
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
-                    text = "Pilih gambar yang sudah ada di perangkat",
+                    text = stringResource(R.string.edit_profile_gallery_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -603,14 +605,14 @@ fun DocumentUploadItem(
                     when {
                         isPending -> {
                             Text(
-                                text = "Siap diupload (simpan untuk mengunggah)",
+                                text = stringResource(R.string.edit_profile_doc_pending),
                                 color = MaterialTheme.colorScheme.tertiary,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
                         isUploaded -> {
                             Text(
-                                text = "Sudah diupload",
+                                text = stringResource(R.string.edit_profile_doc_uploaded),
                                 color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall
                             )
@@ -618,7 +620,7 @@ fun DocumentUploadItem(
                     }
                 }
                 IconButton(onClick = onUpload) {
-                    Icon(Icons.Default.Upload, contentDescription = "Upload $label")
+                    Icon(Icons.Default.Upload, contentDescription = stringResource(R.string.edit_profile_upload_label, label))
                 }
             }
             
@@ -645,7 +647,7 @@ fun DocumentUploadItem(
                 if (model != null) {
                     AsyncImage(
                         model = model,
-                        contentDescription = "Preview $label",
+                        contentDescription = stringResource(R.string.edit_profile_preview_label, label),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(180.dp)

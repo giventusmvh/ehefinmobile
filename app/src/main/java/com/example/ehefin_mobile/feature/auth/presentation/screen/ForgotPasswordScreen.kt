@@ -40,9 +40,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthEvent
 import com.example.ehefin_mobile.feature.auth.presentation.viewmodel.AuthViewModel
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +61,7 @@ fun ForgotPasswordScreen(
         viewModel.events.collectLatest { event ->
             when (event) {
                 is AuthEvent.ForgotPasswordEmailSent -> {
-                    Toast.makeText(context, "Cek email anda", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.forgot_password_check_email), Toast.LENGTH_LONG).show()
                     onNavigateBack()
                 }
                 is AuthEvent.ShowError -> {
@@ -81,12 +83,12 @@ fun ForgotPasswordScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Lupa Password") },
+                title = { Text(stringResource(R.string.forgot_password_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -109,7 +111,7 @@ fun ForgotPasswordScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = "Reset Password",
+                    text = stringResource(R.string.forgot_password_reset_title),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -117,7 +119,7 @@ fun ForgotPasswordScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Masukkan email yang terdaftar akun Anda. Kami akan mengirimkan link untuk mereset password.",
+                    text = stringResource(R.string.forgot_password_reset_desc),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -129,8 +131,8 @@ fun ForgotPasswordScreen(
                 OutlinedTextField(
                     value = uiState.forgotPasswordEmail,
                     onValueChange = viewModel::onForgotPasswordEmailChange,
-                    label = { Text("Email") },
-                    placeholder = { Text("contoh@email.com") },
+                    label = { Text(stringResource(R.string.label_email)) },
+                    placeholder = { Text(stringResource(R.string.forgot_password_email_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -162,7 +164,7 @@ fun ForgotPasswordScreen(
                             modifier = Modifier.size(24.dp)
                         )
                     } else {
-                        Text("Kirim Link Reset")
+                        Text(stringResource(R.string.forgot_password_send_button))
                     }
                 }
             }

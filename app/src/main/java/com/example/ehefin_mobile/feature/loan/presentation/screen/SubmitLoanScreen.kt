@@ -37,8 +37,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.ehefin_mobile.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ehefin_mobile.feature.loan.presentation.viewmodel.LoanEvent
 import androidx.compose.foundation.layout.size
@@ -57,6 +60,7 @@ fun SubmitLoanScreen(
 ) {
     val state by viewModel.submitState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     var branchExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.resetSubmitForm() }
@@ -87,7 +91,7 @@ fun SubmitLoanScreen(
         viewModel.events.collectLatest { event ->
             when (event) {
                 is LoanEvent.LoanSubmitted -> {
-                    snackbarHostState.showSnackbar("Pinjaman berhasil diajukan!")
+                    snackbarHostState.showSnackbar(context.getString(R.string.submit_loan_success))
                     onLoanSubmitted()
                 }
                 is LoanEvent.ShowError -> {
@@ -109,12 +113,12 @@ fun SubmitLoanScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                        title = { Text("Ajukan Pinjaman") },
+                        title = { Text(stringResource(R.string.submit_loan_title)) },
                         navigationIcon = {
                             IconButton(onClick = onNavigateBack) {
                                 Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Kembali"
+                                        contentDescription = stringResource(R.string.back)
                                 )
                             }
                         }
@@ -129,7 +133,7 @@ fun SubmitLoanScreen(
                                 .padding(16.dp)
         ) {
             Text(
-                    text = "Formulir Pengajuan",
+                    text = stringResource(R.string.submit_loan_form_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground
             )
@@ -137,7 +141,7 @@ fun SubmitLoanScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                    text = "Lengkapi data berikut untuk mengajukan pinjaman",
+                    text = stringResource(R.string.submit_loan_form_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -156,19 +160,19 @@ fun SubmitLoanScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Warning,
-                            contentDescription = "Warning",
+                            contentDescription = stringResource(R.string.submit_loan_warning),
                             tint = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Belum Ada Plafond Aktif",
+                            text = stringResource(R.string.submit_loan_no_plafond),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Anda belum memiliki plafond atau limit kredit aktif. Silakan ajukan plafond terlebih dahulu.",
+                            text = stringResource(R.string.submit_loan_no_plafond_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -181,7 +185,7 @@ fun SubmitLoanScreen(
                                 contentColor = MaterialTheme.colorScheme.onError
                             )
                         ) {
-                            Text("Ajukan Plafond")
+                            Text(stringResource(R.string.apply_plafond))
                         }
                     }
                 }
@@ -198,7 +202,7 @@ fun SubmitLoanScreen(
                         value = state.branches.find { it.id == state.selectedBranchId }?.name ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Pilih Cabang") },
+                        label = { Text(stringResource(R.string.select_branch)) },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = branchExpanded)
                         },
@@ -228,8 +232,8 @@ fun SubmitLoanScreen(
             androidx.compose.material3.OutlinedTextField(
                     value = state.amount,
                     onValueChange = viewModel::onAmountChange,
-                    label = { Text("Jumlah Pinjaman (Rp)") },
-                    placeholder = { Text("Contoh: 10000000") },
+                    label = { Text(stringResource(R.string.submit_loan_amount_label)) },
+                    placeholder = { Text(stringResource(R.string.submit_loan_amount_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions =
                             androidx.compose.foundation.text.KeyboardOptions(
@@ -248,8 +252,8 @@ fun SubmitLoanScreen(
                     androidx.compose.material3.OutlinedTextField(
                             value = state.tenor,
                             onValueChange = viewModel::onTenorChange,
-                            label = { Text("Tenor (bulan)") },
-                            placeholder = { Text("1-48") },
+                            label = { Text(stringResource(R.string.submit_loan_tenor_label)) },
+                            placeholder = { Text(stringResource(R.string.submit_loan_tenor_placeholder)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions =
                                     androidx.compose.foundation.text.KeyboardOptions(
@@ -264,8 +268,8 @@ fun SubmitLoanScreen(
                             value = state.interestRate,
                             onValueChange = { }, // Read-only
                             readOnly = true,
-                            label = { Text("Bunga (%)") },
-                            placeholder = { Text("Contoh: 5.5") },
+                            label = { Text(stringResource(R.string.submit_loan_rate_label)) },
+                            placeholder = { Text(stringResource(R.string.submit_loan_rate_placeholder)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions =
                                     androidx.compose.foundation.text.KeyboardOptions(
@@ -293,7 +297,7 @@ fun SubmitLoanScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    Text("Ajukan Pinjaman")
+                    Text(stringResource(R.string.submit_loan_title))
                 }
             }
 
@@ -301,7 +305,7 @@ fun SubmitLoanScreen(
 
             // Info text
             Text(
-                    text = "* Pengajuan pinjaman akan diproses setelah diverifikasi oleh tim kami.",
+                    text = stringResource(R.string.submit_loan_info),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
             )

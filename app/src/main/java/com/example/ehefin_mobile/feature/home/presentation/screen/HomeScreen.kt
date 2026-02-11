@@ -85,7 +85,7 @@ fun HomeScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "EheFin",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
@@ -98,7 +98,7 @@ fun HomeScreen(
                     }) {
                         Icon(
                             imageVector = if (isLoggedIn) Icons.AutoMirrored.Filled.ExitToApp else Icons.Default.Lock,
-                            contentDescription = if (isLoggedIn) "Keluar" else "Masuk",
+                            contentDescription = if (isLoggedIn) stringResource(R.string.logout) else stringResource(R.string.login),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -111,19 +111,19 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp, vertical = 10.dp),
+                .padding(horizontal = 20.dp, vertical = 15.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // 1. Greeting & Header
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = if (isLoggedIn) "Halo, Selamat Datang!" else "Selamat Datang di EheFin",
+                    text = if (isLoggedIn) stringResource(R.string.home_greeting_logged_in) else stringResource(R.string.home_greeting_guest),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = if (isLoggedIn) "Kelola keuanganmu dengan bijak hari ini." else "Solusi finansial terbaik untuk kebutuhanmu.",
+                    text = if (isLoggedIn) stringResource(R.string.home_subtitle_logged_in) else stringResource(R.string.home_subtitle_guest),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -148,7 +148,7 @@ fun HomeScreen(
             // 3. Quick Actions Grid
             Column {
                 Text(
-                    text = "Akses Cepat",
+                    text = stringResource(R.string.home_quick_access),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -159,25 +159,25 @@ fun HomeScreen(
                 ) {
                     QuickActionItem(
                         icon = Icons.Default.Add,
-                        label = "Pinjaman",
+                        label = stringResource(R.string.home_menu_loan),
                         onClick = onNavigateToSubmitLoan,
                         enabled = isLoggedIn
                     )
                     QuickActionItem(
                         icon = Icons.Default.CreditCard,
-                        label = "Plafond",
+                        label = stringResource(R.string.home_menu_plafond),
                         onClick = onNavigateToPlafond,
                         enabled = isLoggedIn
                     )
                     QuickActionItem(
                         icon = Icons.Default.History,
-                        label = "Riwayat",
+                        label = stringResource(R.string.home_menu_history),
                         onClick = onNavigateToHistory,
                         enabled = isLoggedIn
                     )
                     QuickActionItem(
                         icon = Icons.Default.Person,
-                        label = "Profil",
+                        label = stringResource(R.string.home_menu_profile),
                         onClick = onNavigateToProfile,
                         enabled = isLoggedIn
                     )
@@ -212,13 +212,13 @@ fun GuestHeroCard(onLoginClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Masuk untuk Akses Penuh",
+                text = stringResource(R.string.home_guest_full_access),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
             )
             Text(
-                text = "Nikmati kemudahan akses finansial dalam genggamanmu.",
+                text = stringResource(R.string.home_guest_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -233,7 +233,7 @@ fun GuestHeroCard(onLoginClick: () -> Unit) {
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Masuk / Daftar Sekarang", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Text(text = stringResource(R.string.home_guest_login_register), fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             }
         }
     }
@@ -260,7 +260,7 @@ fun ActiveLimitCard(balance: Double, limit: Double, onDetailClick: () -> Unit) {
                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Sisa Limit Tersedia",
+                        text = stringResource(R.string.home_remaining_limit),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
@@ -289,7 +289,7 @@ fun ActiveLimitCard(balance: Double, limit: Double, onDetailClick: () -> Unit) {
                 ) {
                     Column {
                         Text(
-                            text = "Total Limit",
+                            text = stringResource(R.string.home_total_limit),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                         )
@@ -310,7 +310,7 @@ fun ActiveLimitCard(balance: Double, limit: Double, onDetailClick: () -> Unit) {
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
-                        Text("Detail", style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(R.string.home_detail), style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }
@@ -333,14 +333,14 @@ fun ActivateLimitCard(onActivateClick: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Aktifkan Limitmu!",
+                    text = stringResource(R.string.home_activate_limit),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                      color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Dapatkan limit kredit hingga Rp 50 Juta dengan bunga ringan.",
+                    text = stringResource(R.string.home_activate_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -351,7 +351,7 @@ fun ActivateLimitCard(onActivateClick: () -> Unit) {
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Ajukan Sekarang")
+                    Text(stringResource(R.string.home_activate_button))
                 }
             }
         }
@@ -421,7 +421,7 @@ fun SpecialOfferBanner() {
                      shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "Promo Spesial",
+                        text = stringResource(R.string.home_promo_tag),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -430,13 +430,13 @@ fun SpecialOfferBanner() {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Ajak Teman dapat Cash Rp 500rb!",
+                    text = stringResource(R.string.home_promo_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                  Text(
-                    text = "Bagikan kode referralmu sekarang.",
+                    text = stringResource(R.string.home_promo_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )

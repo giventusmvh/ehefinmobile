@@ -24,8 +24,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ehefin_mobile.R
 import com.example.ehefin_mobile.core.designsystem.components.EheFinEmptyState
 import com.example.ehefin_mobile.core.designsystem.components.EheFinErrorMessage
 import com.example.ehefin_mobile.core.designsystem.components.EheFinLoadingIndicator
@@ -50,7 +52,7 @@ fun LoanListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Pinjaman") }
+                title = { Text(stringResource(R.string.loan_history)) }
             )
         },
         floatingActionButton = {
@@ -60,7 +62,7 @@ fun LoanListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Ajukan Pinjaman",
+                    contentDescription = stringResource(R.string.apply_loan),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -76,20 +78,20 @@ fun LoanListScreen(
 
             when {
                 state.isLoading && state.loans.isEmpty() -> {
-                    EheFinLoadingIndicator(message = "Memuat data pinjaman...")
+                    EheFinLoadingIndicator(message = stringResource(R.string.loan_list_loading))
                 }
 
                 state.error != null && state.loans.isEmpty() -> {
                     EheFinErrorMessage(
-                        message = state.error ?: "Terjadi kesalahan",
+                        message = state.error ?: stringResource(R.string.error_occurred),
                         onRetry = { viewModel.loadLoans() }
                     )
                 }
 
                 state.loans.isEmpty() -> {
                     EheFinEmptyState(
-                        title = "Belum Ada Pinjaman",
-                        message = "Anda belum memiliki pinjaman. Ajukan pinjaman pertama Anda sekarang!",
+                        title = stringResource(R.string.loan_list_empty_title),
+                        message = stringResource(R.string.loan_list_empty_message),
                         icon = {
                             Icon(
                                 imageVector = Icons.Default.Receipt,
