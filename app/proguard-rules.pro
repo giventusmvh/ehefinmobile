@@ -70,7 +70,8 @@
 
 # Keep data classes (DTOs) for serialization
 -keep class com.example.ehefin_mobile.**.data.model.** { *; }
--keep class com.example.ehefin_mobile.**.data.dto.** { *; }
+-keep class com.example.ehefin_mobile.**.data.** { *; }
+-keep class com.example.ehefin_mobile.**.dto.** { *; }
 -keepclassmembers class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
