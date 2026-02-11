@@ -45,6 +45,12 @@ android {
                 storePassword = debugConfig.storePassword
                 keyAlias = debugConfig.keyAlias
                 keyPassword = debugConfig.keyPassword
+                println("⚠️  WARNING: Using DEBUG signing for RELEASE build because environment variables are not set.")
+            } else {
+                 val keystoreFile = file(envKeystorePath)
+                 println("✅ SUCCESS: Using RELEASE keystore from environment variables.")
+                 println("🔑 Keystore Path: ${keystoreFile.absolutePath}")
+                 println("🔑 Keystore Exists: ${keystoreFile.exists()}")
             }
         }
     }
