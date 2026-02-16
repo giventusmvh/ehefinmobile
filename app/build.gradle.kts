@@ -21,7 +21,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // API Base URLs - Change for different environments
-        buildConfigField("String", "BASE_URL", "\"http://34.51.234.182/api/\"")
+        buildConfigField("String", "BASE_URL", "\"http://34.51.203.228/api/\"")
         buildConfigField("String", "BASE_URL_STAGING", "\"https://staging.ehefin.com/api/\"")
         buildConfigField("String", "BASE_URL_PRODUCTION", "\"https://api.ehefin.com/api/\"")
     }
@@ -52,7 +52,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
+            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.203.228/api/\"")
             buildConfigField("String", "GOOGLE_CLIENT_ID", "\"173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com\"")
         }
         release {
@@ -64,7 +64,7 @@ android {
                 "proguard-rules.pro"
             )
             // Using the IP for now since there's no domain/SSL yet
-            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.234.182/api/\"")
+            buildConfigField("String", "ACTIVE_BASE_URL", "\"http://34.51.203.228/api/\"")
             
             val envClientId = System.getenv("GOOGLE_CLIENT_ID")
             val clientId = if (!envClientId.isNullOrEmpty()) envClientId else "173366112230-sciav113b6rvhqc9vbde15nbv2c76kl7.apps.googleusercontent.com"
